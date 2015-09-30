@@ -46,7 +46,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>d3d8to9.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>d3d8.def</ModuleDefinitionFile>
       <AdditionalDependencies>d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -62,12 +62,15 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ModuleDefinitionFile>d3d8to9.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>d3d8.def</ModuleDefinitionFile>
       <AdditionalDependencies>d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="d3d8to9.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="d3d8to9.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
