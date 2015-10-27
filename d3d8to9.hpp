@@ -1,7 +1,5 @@
 /**
- * d3d8to9 - Direct3D8 pseudo-driver that converts API calls and shaders to equivalent Direct3D9 ones
- *
- * Copyright (C) 2015 Crosire
+ * Copyright (C) 2015 Patrick Mours
  *
  * This software is  provided 'as-is', without any express  or implied  warranty. In no event will the
  * authors be held liable for any damages arising from the use of this software.
