@@ -2829,8 +2829,6 @@ ULONG STDMETHODCALLTYPE Direct3D8::Release()
 
 	if (ref == 0)
 	{
-		FreeLibrary(_module);
-
 		delete this;
 	}
 
@@ -3031,21 +3029,12 @@ extern "C" Direct3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
 	LOG << "Redirecting '" << "Direct3DCreate8" << "(" << SDKVersion << ")' ..." << std::endl;
 	LOG << "> Passing on to 'Direct3DCreate9':" << std::endl;
 
-	const HMODULE module = LoadLibraryA("d3d9.dll");
+	IDirect3D9 *const d3d = Direct3DCreate9(D3D_SDK_VERSION);
 
-	if (module == nullptr)
-	{
-		LOG << "Failed to load Direct3D 9 module!" << std::endl;
-
-		return nullptr;
-	}
-
-	IDirect3D9 *const res = reinterpret_cast<IDirect3D9 *(WINAPI *)(UINT)>(GetProcAddress(module, "Direct3DCreate9"))(D3D_SDK_VERSION);
-
-	if (res == nullptr)
+	if (d3d == nullptr)
 	{
 		return nullptr;
 	}
 
-	return new Direct3D8(module, res);
+	return new Direct3D8(d3d);
 }

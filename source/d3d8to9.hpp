@@ -37,7 +37,7 @@ class Direct3D8 : IUnknown
 	Direct3D8 &operator=(const Direct3D8 &) = delete;
 
 public:
-	Direct3D8(HMODULE hModule, IDirect3D9 *proxyInterface) : _module(hModule), _proxy(proxyInterface)
+	Direct3D8(IDirect3D9 *proxyInterface) : _proxy(proxyInterface)
 	{
 	}
 
@@ -65,7 +65,6 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS8 *pPresentationParameters, Direct3DDevice8 **ppReturnedDeviceInterface);
 
 private:
-	const HMODULE _module;
 	IDirect3D9 *const _proxy;
 };
 class Direct3DDevice8 : IUnknown
