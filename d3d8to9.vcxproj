@@ -69,10 +69,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="d3d8to9.cpp" />
+    <ClCompile Include="source\d3d8to9.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="d3d8to9.hpp" />
+    <ClInclude Include="source\d3d8to9.hpp" />
+    <ClInclude Include="source\d3d8types.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="d3d8.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
