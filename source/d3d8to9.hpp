@@ -37,14 +37,11 @@ class Direct3D8 : IUnknown
 	Direct3D8 &operator=(const Direct3D8 &) = delete;
 
 public:
-	Direct3D8(IDirect3D9 *proxyInterface) : _proxy(proxyInterface)
+	Direct3D8(IDirect3D9 *proxy_interface) : _proxy(proxy_interface)
 	{
 	}
 
-	IDirect3D9 *GetProxyInterface() const
-	{
-		return _proxy;
-	}
+	IDirect3D9 *GetProxyInterface() const { return _proxy; }
 
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObj) override;
 	virtual ULONG STDMETHODCALLTYPE AddRef() override;
@@ -73,7 +70,7 @@ class Direct3DDevice8 : IUnknown
 	Direct3DDevice8 &operator=(const Direct3DDevice8 &) = delete;
 
 public:
-	Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *proxyInterface, BOOL ZBufferDiscarding = FALSE) : _d3d(d3d), _proxy(proxyInterface), _zBufferDiscarding(ZBufferDiscarding)
+	Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *proxy_interface, BOOL zbuffer_discarding = FALSE) : _d3d(d3d), _proxy(proxy_interface), _zbuffer_discarding(zbuffer_discarding)
 	{
 		_d3d->AddRef();
 	}
@@ -82,10 +79,7 @@ public:
 		_d3d->Release();
 	}
 
-	IDirect3DDevice9 *GetProxyInterface() const
-	{
-		return _proxy;
-	}
+	IDirect3DDevice9 *GetProxyInterface() const { return _proxy; }
 
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObj) override;
 	virtual ULONG STDMETHODCALLTYPE AddRef() override;
@@ -190,10 +184,10 @@ private:
 	ULONG _ref = 1;
 	Direct3D8 *const _d3d;
 	IDirect3DDevice9 *const _proxy;
-	INT _baseVertexIndex = 0;
-	const BOOL _zBufferDiscarding = FALSE;
-	DWORD _currentVertexShader = 0, _currentPixelShader = 0;
-	Direct3DSurface8 *_currentRenderTarget = nullptr, *_currentDepthStencil = nullptr;
+	INT _base_vertex_index = 0;
+	const BOOL _zbuffer_discarding = FALSE;
+	DWORD _current_vertex_shader = 0, _current_pixel_shader = 0;
+	Direct3DSurface8 *_current_rendertarget = nullptr, *_current_depthstencil = nullptr;
 };
 class Direct3DSwapChain8 : IUnknown
 {
@@ -201,7 +195,7 @@ class Direct3DSwapChain8 : IUnknown
 	Direct3DSwapChain8 &operator=(const Direct3DSwapChain8 &) = delete;
 
 public:
-	Direct3DSwapChain8(Direct3DDevice8 *device, IDirect3DSwapChain9 *proxyInterface) : _device(device), _proxy(proxyInterface)
+	Direct3DSwapChain8(Direct3DDevice8 *device, IDirect3DSwapChain9 *proxy_interface) : _device(device), _proxy(proxy_interface)
 	{
 		_device->AddRef();
 	}
@@ -210,10 +204,7 @@ public:
 		_device->Release();
 	}
 
-	IDirect3DSwapChain9 *GetProxyInterface() const
-	{
-		return _proxy;
-	}
+	IDirect3DSwapChain9 *GetProxyInterface() const { return _proxy; }
 
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObj) override;
 	virtual ULONG STDMETHODCALLTYPE AddRef() override;
@@ -251,7 +242,7 @@ class Direct3DTexture8 : public Direct3DBaseTexture8
 	Direct3DTexture8 &operator=(const Direct3DTexture8 &) = delete;
 
 public:
-	Direct3DTexture8(Direct3DDevice8 *device, IDirect3DTexture9 *proxyInterface) : _device(device), _proxy(proxyInterface)
+	Direct3DTexture8(Direct3DDevice8 *device, IDirect3DTexture9 *proxy_interface) : _device(device), _proxy(proxy_interface)
 	{
 		_device->AddRef();
 	}
@@ -260,10 +251,7 @@ public:
 		_device->Release();
 	}
 
-	IDirect3DTexture9 *GetProxyInterface() const
-	{
-		return _proxy;
-	}
+	IDirect3DTexture9 *GetProxyInterface() const { return _proxy; }
 
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObj) override;
 	virtual ULONG STDMETHODCALLTYPE AddRef() override;
@@ -299,7 +287,7 @@ class Direct3DCubeTexture8 : public Direct3DBaseTexture8
 	Direct3DCubeTexture8 &operator=(const Direct3DCubeTexture8 &) = delete;
 
 public:
-	Direct3DCubeTexture8(Direct3DDevice8 *device, IDirect3DCubeTexture9 *proxyInterface) : _device(device), _proxy(proxyInterface)
+	Direct3DCubeTexture8(Direct3DDevice8 *device, IDirect3DCubeTexture9 *proxy_interface) : _device(device), _proxy(proxy_interface)
 	{
 		_device->AddRef();
 	}
@@ -308,10 +296,7 @@ public:
 		_device->Release();
 	}
 
-	IDirect3DCubeTexture9 *GetProxyInterface() const
-	{
-		return _proxy;
-	}
+	IDirect3DCubeTexture9 *GetProxyInterface() const { return _proxy; }
 
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObj) override;
 	virtual ULONG STDMETHODCALLTYPE AddRef() override;
@@ -347,7 +332,7 @@ class Direct3DVolumeTexture8 : public Direct3DBaseTexture8
 	Direct3DVolumeTexture8 &operator=(const Direct3DVolumeTexture8 &) = delete;
 
 public:
-	Direct3DVolumeTexture8(Direct3DDevice8 *device, IDirect3DVolumeTexture9 *proxyInterface) : _device(device), _proxy(proxyInterface)
+	Direct3DVolumeTexture8(Direct3DDevice8 *device, IDirect3DVolumeTexture9 *proxy_interface) : _device(device), _proxy(proxy_interface)
 	{
 		_device->AddRef();
 	}
@@ -356,10 +341,7 @@ public:
 		_device->Release();
 	}
 
-	IDirect3DVolumeTexture9 *GetProxyInterface() const
-	{
-		return _proxy;
-	}
+	IDirect3DVolumeTexture9 *GetProxyInterface() const { return _proxy; }
 
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObj) override;
 	virtual ULONG STDMETHODCALLTYPE AddRef() override;
@@ -395,7 +377,7 @@ class Direct3DSurface8 : IUnknown
 	Direct3DSurface8 &operator=(const Direct3DSurface8 &) = delete;
 
 public:
-	Direct3DSurface8(Direct3DDevice8 *device, IDirect3DSurface9 *proxyInterface) : _device(device), _proxy(proxyInterface)
+	Direct3DSurface8(Direct3DDevice8 *device, IDirect3DSurface9 *proxy_interface) : _device(device), _proxy(proxy_interface)
 	{
 		_device->AddRef();
 	}
@@ -404,10 +386,7 @@ public:
 		_device->Release();
 	}
 
-	IDirect3DSurface9 *GetProxyInterface() const
-	{
-		return _proxy;
-	}
+	IDirect3DSurface9 *GetProxyInterface() const { return _proxy; }
 
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObj) override;
 	virtual ULONG STDMETHODCALLTYPE AddRef() override;
@@ -433,7 +412,7 @@ class Direct3DVolume8 : IUnknown
 	Direct3DVolume8 &operator=(const Direct3DVolume8 &) = delete;
 
 public:
-	Direct3DVolume8(Direct3DDevice8 *device, IDirect3DVolume9 *proxyInterface) : _device(device), _proxy(proxyInterface)
+	Direct3DVolume8(Direct3DDevice8 *device, IDirect3DVolume9 *proxy_interface) : _device(device), _proxy(proxy_interface)
 	{
 		_device->AddRef();
 	}
@@ -442,10 +421,7 @@ public:
 		_device->Release();
 	}
 
-	IDirect3DVolume9 *GetProxyInterface() const
-	{
-		return _proxy;
-	}
+	IDirect3DVolume9 *GetProxyInterface() const { return _proxy; }
 
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObj) override;
 	virtual ULONG STDMETHODCALLTYPE AddRef() override;
@@ -471,7 +447,7 @@ class Direct3DVertexBuffer8 : public Direct3DResource8
 	Direct3DVertexBuffer8 &operator=(const Direct3DVertexBuffer8 &) = delete;
 
 public:
-	Direct3DVertexBuffer8(Direct3DDevice8 *device, IDirect3DVertexBuffer9 *proxyInterface) : _device(device), _proxy(proxyInterface)
+	Direct3DVertexBuffer8(Direct3DDevice8 *device, IDirect3DVertexBuffer9 *proxy_interface) : _device(device), _proxy(proxy_interface)
 	{
 		_device->AddRef();
 	}
@@ -480,10 +456,7 @@ public:
 		_device->Release();
 	}
 
-	IDirect3DVertexBuffer9 *GetProxyInterface() const
-	{
-		return _proxy;
-	}
+	IDirect3DVertexBuffer9 *GetProxyInterface() const { return _proxy; }
 
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObj) override;
 	virtual ULONG STDMETHODCALLTYPE AddRef() override;
@@ -513,7 +486,7 @@ class Direct3DIndexBuffer8 : public Direct3DResource8
 	Direct3DIndexBuffer8 &operator=(const Direct3DIndexBuffer8 &) = delete;
 
 public:
-	Direct3DIndexBuffer8(Direct3DDevice8 *device, IDirect3DIndexBuffer9 *proxyInterface) : _device(device), _proxy(proxyInterface)
+	Direct3DIndexBuffer8(Direct3DDevice8 *device, IDirect3DIndexBuffer9 *proxy_interface) : _device(device), _proxy(proxy_interface)
 	{
 		_device->AddRef();
 	}
@@ -522,10 +495,7 @@ public:
 		_device->Release();
 	}
 
-	IDirect3DIndexBuffer9 *GetProxyInterface() const
-	{
-		return _proxy;
-	}
+	IDirect3DIndexBuffer9 *GetProxyInterface() const { return _proxy; }
 
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObj) override;
 	virtual ULONG STDMETHODCALLTYPE AddRef() override;
@@ -552,6 +522,6 @@ private:
 
 struct Direct3DVertexShader8
 {
-	IDirect3DVertexShader9 *Shader;
-	IDirect3DVertexDeclaration9 *Declaration;
+	IDirect3DVertexShader9 *shader;
+	IDirect3DVertexDeclaration9 *declaration;
 };
