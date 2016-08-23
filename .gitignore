@@ -1,8 +1,16 @@
-bin/
-obj/
+# Build results
+[Bb]in/
+[Oo]bj/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
 
-*.sln
-*.suo
+# Visual Studio cache files
+ipch/
+*.aps
+*.VC.db
+*.VC.opendb
 *.sdf
-*.vcxproj.*
 *.opensdf
+*.suo
+*.user
