@@ -1,11 +1,11 @@
 /**
-* Copyright (C) 2015 Patrick Mours
-* License: https://github.com/crosire/d3d8to9#license
-*/
+ * Copyright (C) 2015 Patrick Mours
+ * License: https://github.com/crosire/d3d8to9#license
+ */
 
 #pragma once
 
-#include "d3d8types.h"
+#include "d3d8types.hpp"
 
 class __declspec(uuid("1DD9E8DA-1C77-4D40-B0CF-98FEFDFF9512")) Direct3D8;
 class __declspec(uuid("7385E5DF-8FE8-41D5-86B6-D7B48547B6CF")) Direct3DDevice8;
@@ -509,8 +509,6 @@ private:
 	IDirect3DIndexBuffer9 *const _proxy;
 };
 
-struct Direct3DVertexShader8
-{
-	IDirect3DVertexShader9 *shader;
-	IDirect3DVertexDeclaration9 *declaration;
-};
+#include <fstream>
+
+extern std::ofstream LOG;

@@ -70,10 +70,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\d3d8to9.cpp" />
+    <ClCompile Include="source\d3d8to9_base.cpp" />
+    <ClCompile Include="source\d3d8to9_device.cpp" />
+    <ClCompile Include="source\d3d8to9_index_buffer.cpp" />
+    <ClCompile Include="source\d3d8to9_surface.cpp" />
+    <ClCompile Include="source\d3d8to9_swap_chain.cpp" />
+    <ClCompile Include="source\d3d8to9_texture.cpp" />
+    <ClCompile Include="source\d3d8to9_vertex_buffer.cpp" />
+    <ClCompile Include="source\d3d8to9_volume.cpp" />
+    <ClCompile Include="source\d3d8types.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\d3d8to9.hpp" />
-    <ClInclude Include="source\d3d8types.h" />
+    <ClInclude Include="source\d3d8types.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="d3d8.def" />
