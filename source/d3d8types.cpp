@@ -67,7 +67,7 @@ static UINT calc_texture_size(UINT width, UINT height, UINT depth, D3DFORMAT for
 
 void convert_caps(D3DCAPS9 &input, D3DCAPS8 &output)
 {
-	CopyMemory(&output, &input, sizeof(input));
+	CopyMemory(&output, &input, sizeof(output));
 
 	output.Caps2 |= D3DCAPS2_CANRENDERWINDOWED;
 	output.RasterCaps |= D3DPRASTERCAPS_ZBIAS;
