@@ -36,13 +36,14 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::QueryInterface(REFIID riid, void **pp
 }
 ULONG STDMETHODCALLTYPE Direct3DDevice8::AddRef()
 {
-	_ref++;
+	InterlockedIncrement(&_ref);
 
 	return _proxy->AddRef();
 }
 ULONG STDMETHODCALLTYPE Direct3DDevice8::Release()
 {
-	if (--_ref <= 2)
+	ULONG myRef = InterlockedDecrement(&_ref);
+	if (myRef <= 2)
 	{
 		if (_current_rendertarget != nullptr)
 		{
@@ -58,7 +59,7 @@ ULONG STDMETHODCALLTYPE Direct3DDevice8::Release()
 
 	const auto ref = _proxy->Release();
 
-	if (_ref == 0 && ref != 0)
+	if (myRef == 0 && ref != 0)
 	{
 		LOG << "Reference count for 'IDirect3DDevice8' object " << this << " (" << ref << ") is inconsistent." << std::endl;
 	}

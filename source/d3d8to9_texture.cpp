@@ -29,15 +29,16 @@ HRESULT STDMETHODCALLTYPE Direct3DTexture8::QueryInterface(REFIID riid, void **p
 }
 ULONG STDMETHODCALLTYPE Direct3DTexture8::AddRef()
 {
-	_ref++;
+	InterlockedIncrement(&_ref);
 
 	return _proxy->AddRef();
 }
 ULONG STDMETHODCALLTYPE Direct3DTexture8::Release()
 {
 	const auto ref = _proxy->Release();
+	ULONG myRef = InterlockedDecrement(&_ref);
 
-	if (--_ref == 0)
+	if (myRef == 0)
 	{
 		delete this;
 	}
@@ -176,15 +177,16 @@ HRESULT STDMETHODCALLTYPE Direct3DCubeTexture8::QueryInterface(REFIID riid, void
 }
 ULONG STDMETHODCALLTYPE Direct3DCubeTexture8::AddRef()
 {
-	_ref++;
+	InterlockedIncrement(&_ref);
 
 	return _proxy->AddRef();
 }
 ULONG STDMETHODCALLTYPE Direct3DCubeTexture8::Release()
 {
 	const auto ref = _proxy->Release();
+	ULONG myRef = InterlockedDecrement(&_ref);
 
-	if (--_ref == 0)
+	if (myRef == 0)
 	{
 		delete this;
 	}
@@ -323,15 +325,16 @@ HRESULT STDMETHODCALLTYPE Direct3DVolumeTexture8::QueryInterface(REFIID riid, vo
 }
 ULONG STDMETHODCALLTYPE Direct3DVolumeTexture8::AddRef()
 {
-	_ref++;
+	InterlockedIncrement(&_ref);
 
 	return _proxy->AddRef();
 }
 ULONG STDMETHODCALLTYPE Direct3DVolumeTexture8::Release()
 {
 	const auto ref = _proxy->Release();
+	ULONG myRef = InterlockedDecrement(&_ref);
 
-	if (--_ref == 0)
+	if (myRef == 0)
 	{
 		delete this;
 	}

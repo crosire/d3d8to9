@@ -27,15 +27,16 @@ HRESULT STDMETHODCALLTYPE Direct3DVolume8::QueryInterface(REFIID riid, void **pp
 }
 ULONG STDMETHODCALLTYPE Direct3DVolume8::AddRef()
 {
-	_ref++;
+	InterlockedIncrement(&_ref);
 
 	return _proxy->AddRef();
 }
 ULONG STDMETHODCALLTYPE Direct3DVolume8::Release()
 {
 	const auto ref = _proxy->Release();
+	ULONG myRef = InterlockedDecrement(&_ref);
 
-	if (--_ref == 0)
+	if (myRef == 0)
 	{
 		delete this;
 	}
