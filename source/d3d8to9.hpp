@@ -65,6 +65,7 @@ public:
 	}
 	~Direct3DDevice8()
 	{
+		_proxy->Release();
 		_d3d->Release();
 	}
 
@@ -237,6 +238,7 @@ public:
 	}
 	~Direct3DTexture8()
 	{
+		_proxy->Release();
 		_device->Release();
 	}
 
@@ -372,6 +374,7 @@ public:
 	}
 	~Direct3DSurface8()
 	{
+		_proxy->Release();
 		_device->Release();
 	}
 
@@ -407,6 +410,7 @@ public:
 	}
 	~Direct3DVolume8()
 	{
+		_proxy->Release();
 		_device->Release();
 	}
 
@@ -442,6 +446,7 @@ public:
 	}
 	~Direct3DVertexBuffer8()
 	{
+		_proxy->Release();
 		_device->Release();
 	}
 
@@ -481,6 +486,7 @@ public:
 	}
 	~Direct3DIndexBuffer8()
 	{
+		_proxy->Release();
 		_device->Release();
 	}
 

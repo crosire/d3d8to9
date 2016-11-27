@@ -27,13 +27,11 @@ HRESULT STDMETHODCALLTYPE Direct3DSurface8::QueryInterface(REFIID riid, void **p
 }
 ULONG STDMETHODCALLTYPE Direct3DSurface8::AddRef()
 {
-	InterlockedIncrement(&_ref);
+	return InterlockedIncrement(&_ref);
 
-	return _proxy->AddRef();
 }
 ULONG STDMETHODCALLTYPE Direct3DSurface8::Release()
 {
-	const auto ref = _proxy->Release();
 	ULONG myRef = InterlockedDecrement(&_ref);
 
 	if (myRef == 0)
@@ -41,7 +39,7 @@ ULONG STDMETHODCALLTYPE Direct3DSurface8::Release()
 		delete this;
 	}
 
-	return ref;
+	return myRef;
 }
 HRESULT STDMETHODCALLTYPE Direct3DSurface8::GetDevice(Direct3DDevice8 **ppDevice)
 {
