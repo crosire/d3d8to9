@@ -20,7 +20,7 @@ class __declspec(uuid("BD7349F5-14F1-42E4-9C79-972380DB40C0")) Direct3DVolume8;
 class __declspec(uuid("8AEEEAC7-05F9-44D4-B591-000B0DF1CB95")) Direct3DVertexBuffer8;
 class __declspec(uuid("0E689C9A-053D-44A0-9D92-DB0E3D750F86")) Direct3DIndexBuffer8;
 
-class Direct3D8 : IUnknown
+class Direct3D8 : public IUnknown
 {
 	Direct3D8(const Direct3D8 &) = delete;
 	Direct3D8 &operator=(const Direct3D8 &) = delete;
@@ -53,7 +53,7 @@ public:
 private:
 	IDirect3D9 *const _proxy;
 };
-class Direct3DDevice8 : IUnknown
+class Direct3DDevice8 : public IUnknown
 {
 	Direct3DDevice8(const Direct3DDevice8 &) = delete;
 	Direct3DDevice8 &operator=(const Direct3DDevice8 &) = delete;
@@ -178,7 +178,7 @@ private:
 	DWORD _current_vertex_shader = 0, _current_pixel_shader = 0;
 	Direct3DSurface8 *_current_rendertarget = nullptr, *_current_depthstencil = nullptr;
 };
-class Direct3DSwapChain8 : IUnknown
+class Direct3DSwapChain8 : public IUnknown
 {
 	Direct3DSwapChain8(const Direct3DSwapChain8 &) = delete;
 	Direct3DSwapChain8 &operator=(const Direct3DSwapChain8 &) = delete;
@@ -206,7 +206,7 @@ private:
 	Direct3DDevice8 *const _device;
 	IDirect3DSwapChain9 *const _proxy;
 };
-class Direct3DResource8 : IUnknown
+class Direct3DResource8 : public IUnknown
 {
 public:
 	virtual HRESULT STDMETHODCALLTYPE GetDevice(Direct3DDevice8 **ppDevice) = 0;
@@ -360,7 +360,7 @@ private:
 	Direct3DDevice8 *const _device;
 	IDirect3DVolumeTexture9 *const _proxy;
 };
-class Direct3DSurface8 : IUnknown
+class Direct3DSurface8 : public IUnknown
 {
 	Direct3DSurface8(const Direct3DSurface8 &) = delete;
 	Direct3DSurface8 &operator=(const Direct3DSurface8 &) = delete;
@@ -395,7 +395,7 @@ private:
 	Direct3DDevice8 *const _device;
 	IDirect3DSurface9 *const _proxy;
 };
-class Direct3DVolume8 : IUnknown
+class Direct3DVolume8 : public IUnknown
 {
 	Direct3DVolume8(const Direct3DVolume8 &) = delete;
 	Direct3DVolume8 &operator=(const Direct3DVolume8 &) = delete;
