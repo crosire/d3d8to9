@@ -42,29 +42,34 @@ ULONG STDMETHODCALLTYPE Direct3DDevice8::AddRef()
 }
 ULONG STDMETHODCALLTYPE Direct3DDevice8::Release()
 {
-	ULONG myRef = InterlockedDecrement(&_ref);
-	if (myRef <= 2)
+	ULONG myRef = InterlockedExchange(&_ref, _ref);
+	if (myRef <= 3) // 2 from _current_rendertarget and _current_depthstencil + 1 from the caller
 	{
-		if (_current_rendertarget != nullptr)
+		// Transfer ownership of these members to prevent an infinite loop and unsigned integer underflow on surface refcounts
+		// since releasing those surfaces relleases this device too
+		auto* rt = _current_rendertarget;
+		auto* ds = _current_depthstencil;
+		_current_rendertarget = nullptr;
+		_current_depthstencil = nullptr;
+
+		if (rt != nullptr)
 		{
-			_current_rendertarget->Release();
-			_current_rendertarget = nullptr;
+			rt->Release();
 		}
-		if (_current_depthstencil != nullptr)
-		{
-			_current_depthstencil->Release();
-			_current_depthstencil = nullptr;
+		if (ds != nullptr)
+		{	
+			ds->Release();
 		}
 	}
-
 	const auto ref = _proxy->Release();
+	myRef = InterlockedDecrement(&_ref);
 
 	if (myRef == 0 && ref != 0)
 	{
 		LOG << "Reference count for 'IDirect3DDevice8' object " << this << " (" << ref << ") is inconsistent." << std::endl;
 	}
 
-	if (ref == 0)
+	if (myRef == 0)
 	{
 		delete this;
 	}
