@@ -28,15 +28,16 @@ HRESULT STDMETHODCALLTYPE Direct3DVertexBuffer8::QueryInterface(REFIID riid, voi
 }
 ULONG STDMETHODCALLTYPE Direct3DVertexBuffer8::AddRef()
 {
-	_ref++;
+	InterlockedIncrement(&_ref);
 
 	return _proxy->AddRef();
 }
 ULONG STDMETHODCALLTYPE Direct3DVertexBuffer8::Release()
 {
 	const auto ref = _proxy->Release();
+	ULONG myRef = InterlockedDecrement(&_ref);
 
-	if (--_ref == 0)
+	if (myRef == 0)
 	{
 		delete this;
 	}
