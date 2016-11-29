@@ -1287,7 +1287,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(CONST DWORD *pDecl
 			declpos += decl.length();
 		}
 
-#pragma region Fill registers with default value
+		#pragma region Fill registers with default value
 		constants += "    def c95, 0, 0, 0, 0\n";
 
 		source.insert(declpos, constants);
@@ -1319,7 +1319,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(CONST DWORD *pDecl
 				source.insert(declpos + constants.size(), "    mov " + reg + ", c95 /* initialize register " + reg + " */\n");
 			}
 		}
-#pragma endregion
+		#pragma endregion
 
 		source = std::regex_replace(source, std::regex("    \\/\\/ vs\\.1\\.1\\n((?! ).+\\n)+"), "");
 		source = std::regex_replace(source, std::regex("(oFog|oPts)\\.x"), "$1 /* removed swizzle */");
