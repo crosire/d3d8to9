@@ -5,6 +5,7 @@
 
 #pragma once
 
+struct IUnknown;
 #include <d3d9.h>
 
 #define D3DFMT_W11V11U10 65

@@ -904,6 +904,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetTexture(DWORD Stage, Direct3DBaseT
 				basetexture->QueryInterface(IID_PPV_ARGS(&cubetexture));
 				*ppTexture = new Direct3DCubeTexture8(this, cubetexture);
 				break;
+			default:
+				basetexture->Release();
+				return D3DERR_INVALIDCALL;
 		}
 
 		basetexture->Release();
