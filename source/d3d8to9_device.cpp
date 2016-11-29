@@ -1073,7 +1073,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(CONST DWORD *pDecl
 
 	LOG << "> Translating vertex declaration ..." << std::endl;
 
-	const BYTE sTypes[][2] =
+	static const BYTE sTypes[][2] =
 	{
 		{ D3DDECLTYPE_FLOAT1, 4 },
 		{ D3DDECLTYPE_FLOAT2, 8 },
@@ -1093,7 +1093,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(CONST DWORD *pDecl
 		{ D3DDECLTYPE_FLOAT16_2, 8 },
 		{ D3DDECLTYPE_FLOAT16_4, 16 }
 	};
-	const BYTE sAddressUsage[][2] =
+	static const BYTE sAddressUsage[][2] =
 	{
 		{ D3DDECLUSAGE_POSITION, 0 },
 		{ D3DDECLUSAGE_BLENDWEIGHT, 0 },

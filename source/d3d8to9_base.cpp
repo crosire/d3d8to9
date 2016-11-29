@@ -77,13 +77,13 @@ HRESULT STDMETHODCALLTYPE Direct3D8::GetAdapterIdentifier(UINT Adapter, DWORD Fl
 
 	return D3D_OK;
 }
+
+static const D3DFORMAT AdapterFormats[] = { D3DFMT_A8R8G8B8, D3DFMT_X8R8G8B8, D3DFMT_R5G6B5, D3DFMT_X1R5G5B5, D3DFMT_A1R5G5B5, D3DFMT_A2R10G10B10 };
 UINT STDMETHODCALLTYPE Direct3D8::GetAdapterModeCount(UINT Adapter)
 {
-	const D3DFORMAT formats[] = { D3DFMT_A8R8G8B8, D3DFMT_X8R8G8B8, D3DFMT_R5G6B5, D3DFMT_X1R5G5B5, D3DFMT_A1R5G5B5, D3DFMT_A2R10G10B10 };
-
 	UINT count = 0;
 
-	for (auto format : formats)
+	for (auto format : AdapterFormats)
 	{
 		count += _proxy->GetAdapterModeCount(Adapter, format);
 	}
@@ -97,11 +97,9 @@ HRESULT STDMETHODCALLTYPE Direct3D8::EnumAdapterModes(UINT Adapter, UINT Mode, D
 		return D3DERR_INVALIDCALL;
 	}
 
-	const D3DFORMAT formats[] = { D3DFMT_A8R8G8B8, D3DFMT_X8R8G8B8, D3DFMT_R5G6B5, D3DFMT_X1R5G5B5, D3DFMT_A1R5G5B5, D3DFMT_A2R10G10B10 };
-
 	UINT offset = 0;
 
-	for (auto format : formats)
+	for (auto format : AdapterFormats)
 	{
 		const auto modes = _proxy->GetAdapterModeCount(Adapter, format);
 
