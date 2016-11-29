@@ -34,7 +34,7 @@
   <PropertyGroup>
     <TargetName>d3d8</TargetName>
     <OutDir>bin\$(Configuration)\</OutDir>
-    <IntDir>obj\$(Configuration)\</IntDir>
+    <IntDir>intermediate\$(Configuration)\</IntDir>
     <IncludePath>$(IncludePath);$(DXSDK_DIR)\Include</IncludePath>
     <LibraryPath>$(DXSDK_DIR)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
@@ -47,7 +47,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>d3d8.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>res\d3d8.def</ModuleDefinitionFile>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -64,7 +64,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ModuleDefinitionFile>d3d8.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>res\d3d8.def</ModuleDefinitionFile>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -81,11 +81,15 @@
     <ClCompile Include="source\d3d8types.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="res\resource.h" />
     <ClInclude Include="source\d3d8to9.hpp" />
     <ClInclude Include="source\d3d8types.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="d3d8.def" />
+    <None Include="res\d3d8.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="res\d3d8to9.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
