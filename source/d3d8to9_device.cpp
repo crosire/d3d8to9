@@ -1073,7 +1073,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(CONST DWORD *pDecl
 
 	LOG << "> Translating vertex declaration ..." << std::endl;
 
-	const BYTE sTypes[][2] =
+	static const BYTE sTypes[][2] =
 	{
 		{ D3DDECLTYPE_FLOAT1, 4 },
 		{ D3DDECLTYPE_FLOAT2, 8 },
@@ -1093,7 +1093,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(CONST DWORD *pDecl
 		{ D3DDECLTYPE_FLOAT16_2, 8 },
 		{ D3DDECLTYPE_FLOAT16_4, 16 }
 	};
-	const BYTE sAddressUsage[][2] =
+	static const BYTE sAddressUsage[][2] =
 	{
 		{ D3DDECLUSAGE_POSITION, 0 },
 		{ D3DDECLUSAGE_BLENDWEIGHT, 0 },
@@ -1369,7 +1369,10 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(CONST DWORD *pDecl
 
 		if (SUCCEEDED(hr))
 		{
-			*pHandle = reinterpret_cast<DWORD>(shader) | 0x80000000;
+			// Since 'shader' is at least 8 byte aligned, we can safely shift it to right and end up not overwriting the top bit
+			assert((reinterpret_cast<DWORD>(shader) & 1) == 0);
+			const DWORD shaderMagic = reinterpret_cast<DWORD>(shader) >> 1;
+			*pHandle = shaderMagic | 0x80000000;
 		}
 		else
 		{
@@ -1406,7 +1409,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetVertexShader(DWORD Handle)
 	}
 	else
 	{
-		const auto shader = reinterpret_cast<vertex_shader_info *>(Handle ^ 0x80000000);
+		const DWORD handleMagic = Handle << 1;
+		const auto shader = reinterpret_cast<vertex_shader_info *>(handleMagic);
 
 		hr = _proxy->SetVertexShader(shader->shader);
 		_proxy->SetVertexDeclaration(shader->declaration);
@@ -1446,7 +1450,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteVertexShader(DWORD Handle)
 		SetVertexShader(0);
 	}
 
-	const auto shader = reinterpret_cast<vertex_shader_info *>(Handle ^ 0x80000000);
+	const DWORD handleMagic = Handle << 1;
+	const auto shader = reinterpret_cast<vertex_shader_info *>(handleMagic);
 
 	if (shader->shader != nullptr)
 	{
@@ -1489,7 +1494,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetVertexShaderFunction(DWORD Handle,
 		return D3DERR_INVALIDCALL;
 	}
 
-	const auto shader = reinterpret_cast<vertex_shader_info *>(Handle ^ 0x80000000)->shader;
+	const DWORD handleMagic = Handle << 1;
+	const auto shader = reinterpret_cast<vertex_shader_info *>(handleMagic)->shader;
 
 	if (shader == nullptr)
 	{
