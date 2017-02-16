@@ -5,11 +5,14 @@
 
 #include "d3d8to9.hpp"
 
-// Very simple logging for the purpose of debugging only.
+#ifndef D3D8TO9NOLOG
+ // Very simple logging for the purpose of debugging only.
 std::ofstream LOG;
+#endif
 
 extern "C" Direct3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
 {
+#ifndef D3D8TO9NOLOG
 	LOG.open("d3d8.log", std::ios::trunc);
 
 	if (!LOG.is_open())
@@ -19,6 +22,7 @@ extern "C" Direct3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
 
 	LOG << "Redirecting '" << "Direct3DCreate8" << "(" << SDKVersion << ")' ..." << std::endl;
 	LOG << "> Passing on to 'Direct3DCreate9':" << std::endl;
+#endif
 
 	IDirect3D9 *const d3d = Direct3DCreate9(D3D_SDK_VERSION);
 
