@@ -511,4 +511,6 @@ private:
 
 #include <fstream>
 
+#ifndef D3D8TO9NOLOG
 extern std::ofstream LOG;
+#endif
