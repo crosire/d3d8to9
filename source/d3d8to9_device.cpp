@@ -575,7 +575,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CopyRects(Direct3DSurface8 *pSourceSu
 		{
 #ifndef D3D8TO9NOLOG
 			LOG << "Failed to translate 'IDirect3DDevice8::CopyRects' call from '[" << desc_source.Width << "x" << desc_source.Height << ", " << desc_source.Format << ", " << desc_source.MultiSampleType << ", " << desc_source.Usage << ", " << desc_source.Pool << "]' to '[" << desc_destination.Width << "x" << desc_destination.Height << ", " << desc_destination.Format << ", " << desc_destination.MultiSampleType << ", " << desc_destination.Usage << ", " << desc_destination.Pool << "]'!" << std::endl;
-#endif			break;
+#endif
+			break;
 		}
 	}
 
