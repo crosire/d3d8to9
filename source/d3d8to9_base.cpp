@@ -189,9 +189,6 @@ HRESULT STDMETHODCALLTYPE Direct3D8::CreateDevice(UINT Adapter, D3DDEVTYPE Devic
 
 	const auto device_proxy = new Direct3DDevice8(this, device, (pp.Flags & D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL) != 0);
 
-	// Set default vertex declaration
-	device->SetFVF(D3DFVF_XYZ);
-
 	// Set default render target
 	IDirect3DSurface9 *rendertarget = nullptr, *depthstencil = nullptr;
 	Direct3DSurface8 *rendertarget_proxy = nullptr, *depthstencil_proxy = nullptr;
