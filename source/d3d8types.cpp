@@ -1,6 +1,8 @@
 /**
  * Copyright (C) 2015 Patrick Mours. All rights reserved.
  * License: https://github.com/crosire/d3d8to9#license
+ *
+ * Updated 2017 by Elisha Riedlinger
  */
 
 #include "d3d8types.hpp"
@@ -69,16 +71,12 @@ void convert_caps(D3DCAPS9 &input, D3DCAPS8 &output)
 {
 	CopyMemory(&output, &input, sizeof(output));
 
-	output.Caps2 |= D3DCAPS2_CANRENDERWINDOWED;
-	output.RasterCaps |= D3DPRASTERCAPS_ZBIAS;
-	output.StencilCaps &= ~D3DSTENCILCAPS_TWOSIDED;
-	output.VertexShaderVersion = D3DVS_VERSION(1, 1);
-	output.PixelShaderVersion = D3DPS_VERSION(1, 4);
-
-	if (output.MaxVertexShaderConst > 256)
-	{
-		output.MaxVertexShaderConst = 256;
-	}
+	output.Caps2 |= D3DCAPS2_CANRENDERWINDOWED;								// Tell application that windows mode is supported
+	output.RasterCaps |= D3DPRASTERCAPS_ZBIAS;								// Tell application that z-bias is supported
+	output.StencilCaps &= ~D3DSTENCILCAPS_TWOSIDED;							// Remove unsupported StencilCaps type
+	output.PixelShaderVersion = D3DPS_VERSION(1, 4);						// Set defaul PixelShaderVersion to 1.4 for D3D8 compatibility
+	output.VertexShaderVersion = D3DVS_VERSION(1, 1);						// Set defaul VertexShaderVersion to 1.1 for D3D8 compatibility
+	output.MaxVertexShaderConst = min(256, input.MaxVertexShaderConst);		// D3D8 can only handle upto 256 for MaxVertexShaderConst
 }
 void convert_volume_desc(D3DVOLUME_DESC &input, D3DVOLUME_DESC8 &output)
 {
@@ -98,13 +96,17 @@ void convert_surface_desc(D3DSURFACE_DESC &input, D3DSURFACE_DESC8 &output)
 	output.Usage = input.Usage;
 	output.Pool = input.Pool;
 	output.Size = calc_texture_size(input.Width, input.Height, 1, input.Format);
-	output.MultiSampleType = input.MultiSampleType;
 	output.Width = input.Width;
 	output.Height = input.Height;
 
-	if (output.MultiSampleType == D3DMULTISAMPLE_NONMASKABLE)
+	// Check for D3DMULTISAMPLE_NONMASKABLE and change it to D3DMULTISAMPLE_NONE for best D3D8 compatibility.
+	if (input.MultiSampleType == D3DMULTISAMPLE_NONMASKABLE)
 	{
 		output.MultiSampleType = D3DMULTISAMPLE_NONE;
+	}
+	else
+	{
+		output.MultiSampleType = input.MultiSampleType;
 	}
 }
 void convert_present_parameters(D3DPRESENT_PARAMETERS8 &input, D3DPRESENT_PARAMETERS &output)
@@ -113,25 +115,46 @@ void convert_present_parameters(D3DPRESENT_PARAMETERS8 &input, D3DPRESENT_PARAME
 	output.BackBufferHeight = input.BackBufferHeight;
 	output.BackBufferFormat = input.BackBufferFormat;
 	output.BackBufferCount = input.BackBufferCount;
-	output.MultiSampleType = input.MultiSampleType;
 	output.MultiSampleQuality = 0;
-	output.SwapEffect = input.SwapEffect;
 	output.hDeviceWindow = input.hDeviceWindow;
 	output.Windowed = input.Windowed;
 	output.EnableAutoDepthStencil = input.EnableAutoDepthStencil;
 	output.AutoDepthStencilFormat = input.AutoDepthStencilFormat;
 	output.Flags = input.Flags;
 	output.FullScreen_RefreshRateInHz = input.FullScreen_RefreshRateInHz;
-	output.PresentationInterval = input.FullScreen_PresentationInterval;
 
-	if (output.SwapEffect == D3DSWAPEFFECT_COPY_VSYNC)
+	// MultiSampleType must be D3DMULTISAMPLE_NONE unless SwapEffect has been set to D3DSWAPEFFECT_DISCARD.
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/bb172588(v=vs.85).aspx
+	// Check for D3DMULTISAMPLE_NONMASKABLE and change it to D3DMULTISAMPLE_NONE for best D3D8 compatibility.
+	if (input.SwapEffect != D3DSWAPEFFECT_DISCARD || input.MultiSampleType == D3DMULTISAMPLE_NONMASKABLE)
+	{
+		output.MultiSampleType = D3DMULTISAMPLE_NONE;
+	}
+	else
+	{
+		output.MultiSampleType = input.MultiSampleType;
+	}
+
+	// D3DPRESENT_RATE_UNLIMITED is no longer supported in D3D9
+	// Update PresentationInterval when SwapEffect = D3DSWAPEFFECT_COPY_VSYNC and
+	// application is not windowed for best D3D8 compatibility
+	if (input.FullScreen_PresentationInterval == D3DPRESENT_RATE_UNLIMITED || (input.SwapEffect == D3DSWAPEFFECT_COPY_VSYNC && !input.Windowed))
+	{
+		output.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+	}
+	else
+	{
+		output.PresentationInterval = input.FullScreen_PresentationInterval;
+	}
+
+	// D3DSWAPEFFECT_COPY_VSYNC is no longer supported in D3D9
+	if (input.SwapEffect == D3DSWAPEFFECT_COPY_VSYNC)
 	{
 		output.SwapEffect = D3DSWAPEFFECT_COPY;
 	}
-
-	if (output.PresentationInterval == D3DPRESENT_RATE_UNLIMITED)
+	else
 	{
-		output.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+		output.SwapEffect = input.SwapEffect;
 	}
 }
 void convert_adapter_identifier(D3DADAPTER_IDENTIFIER9 &input, D3DADAPTER_IDENTIFIER8 &output)
