@@ -132,7 +132,7 @@ void convert_present_parameters(D3DPRESENT_PARAMETERS8 &input, D3DPRESENT_PARAME
 	// D3DPRESENT_RATE_UNLIMITED is no longer supported in D3D9
 	// Update PresentationInterval when SwapEffect = D3DSWAPEFFECT_COPY_VSYNC and
 	// application is not windowed for best D3D8 compatibility
-	if (output.FullScreen_PresentationInterval == D3DPRESENT_RATE_UNLIMITED ||
+	if (output.PresentationInterval == D3DPRESENT_RATE_UNLIMITED ||
 		(output.SwapEffect == D3DSWAPEFFECT_COPY_VSYNC && !output.Windowed))
 	{
 		output.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
