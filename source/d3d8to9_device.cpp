@@ -43,24 +43,27 @@ ULONG STDMETHODCALLTYPE Direct3DDevice8::AddRef()
 ULONG STDMETHODCALLTYPE Direct3DDevice8::Release()
 {
 	ULONG myRef = InterlockedExchange(&_ref, _ref);
-	if (myRef <= 3) // 2 from _current_rendertarget and _current_depthstencil + 1 from the caller
+	
+	auto* rt = _current_rendertarget;
+	auto* ds = _current_depthstencil;
+	if (rt != nullptr && ds != nullptr && myRef == 3)
 	{
-		// Transfer ownership of these members to prevent an infinite loop and unsigned integer underflow on surface refcounts
-		// since releasing those surfaces relleases this device too
-		auto* rt = _current_rendertarget;
-		auto* ds = _current_depthstencil;
 		_current_rendertarget = nullptr;
 		_current_depthstencil = nullptr;
-
-		if (rt != nullptr)
-		{
-			rt->Release();
-		}
-		if (ds != nullptr)
-		{	
-			ds->Release();
-		}
+		rt->Release();
+		ds->Release();
 	}
+	else if (rt != nullptr && myRef == 2)
+	{
+		_current_rendertarget = nullptr;
+		rt->Release();
+	}
+	else if (ds != nullptr && myRef == 2)
+	{
+		_current_depthstencil = nullptr;
+		ds->Release();
+	}
+
 	const auto ref = _proxy->Release();
 	myRef = InterlockedDecrement(&_ref);
 
