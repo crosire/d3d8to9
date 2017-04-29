@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <d3dx9shader.h>
 
-// D3DXLoadSurfaceFromSurface declaration for d3dx9_xx.dll
+// D3DXLoadSurfaceFromSurface declaration for d3dx9_43.dll
 typedef HRESULT(__stdcall *D3DXLoadSurfaceFromSurfaceType)(
 	_In_       LPDIRECT3DSURFACE9 pDestSurface,
 	_In_ const PALETTEENTRY       *pDestPalette,
@@ -21,7 +21,7 @@ typedef HRESULT(__stdcall *D3DXLoadSurfaceFromSurfaceType)(
 	);
 D3DXLoadSurfaceFromSurfaceType D3DXLoadSurfaceFromSurfacePtr = nullptr;
 
-// D3DXAssembleShader declaration for d3dx9_xx.dll
+// D3DXAssembleShader declaration for d3dx9_43.dll
 typedef HRESULT(__stdcall *D3DXAssembleShaderType)(
 	_In_        LPCSTR        pSrcData,
 	_In_        UINT          SrcDataLen,
@@ -33,7 +33,7 @@ typedef HRESULT(__stdcall *D3DXAssembleShaderType)(
 	);
 D3DXAssembleShaderType D3DXAssembleShaderPtr = nullptr;
 
-// D3DXDisassembleShader declaration for d3dx9_xx.dll
+// D3DXDisassembleShader declaration for d3dx9_43.dll
 typedef HRESULT(__stdcall *D3DXDisassembleShaderType)(
 	_In_  const DWORD        *pShader,
 	_In_        BOOL         EnableColorCode,
@@ -53,8 +53,7 @@ bool LoadD3dx9()
 	else
 	{
 		// Load dll
-		HMODULE dllHandle = NULL;
-		dllHandle = LoadLibrary("d3dx9_43.dll");
+		HMODULE dllHandle = LoadLibrary(TEXT("d3dx9_43.dll"));
 
 		// Cannot load dll
 		if (dllHandle == NULL)
