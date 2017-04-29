@@ -52,29 +52,15 @@ bool LoadD3dx9()
 	}
 	else
 	{
-		// Declare vars
+		// Load dll
 		HMODULE dllHandle = NULL;
-		char d3dx9name[MAX_PATH];
-
-		// Check for different versions of d3dx9_xx.dll
-		for (int x = 99; x > 9 && dllHandle == NULL; x--)
-		{
-			// Get dll name
-			strcpy_s(d3dx9name, "d3dx9_");
-			char buffer[11];
-			_itoa_s(x, buffer, 10);
-			strcat_s(d3dx9name, buffer);
-			strcat_s(d3dx9name, ".dll");
-
-			// Load dll
-			dllHandle = LoadLibrary(d3dx9name);
-		}
+		dllHandle = LoadLibrary("d3dx9_43.dll");
 
 		// Cannot load dll
 		if (dllHandle == NULL)
 		{
 #ifndef D3D8TO9NOLOG
-			LOG << "Failed to load d3dx9_xx.dll!" << std::endl;
+			LOG << "Failed to load d3dx9_43.dll!" << std::endl;
 #endif
 			return false;
 		}
@@ -83,7 +69,7 @@ bool LoadD3dx9()
 		{
 			IsD3dx9Loaded = true;
 #ifndef D3D8TO9NOLOG
-			LOG << "Loaded " << d3dx9name << std::endl;
+			LOG << "Loaded d3dx9_43.dll" << std::endl;
 #endif
 
 			// Get pointers to each function
