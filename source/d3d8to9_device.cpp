@@ -3,89 +3,11 @@
  * License: https://github.com/crosire/d3d8to9#license
  */
 
+#include "d3dx9.hpp"
 #include "d3d8to9.hpp"
 #include <regex>
 #include <assert.h>
-#include <d3dx9shader.h>
 
-// D3DXLoadSurfaceFromSurface declaration for d3dx9_43.dll
-typedef HRESULT(__stdcall *D3DXLoadSurfaceFromSurfaceType)(
-	_In_       LPDIRECT3DSURFACE9 pDestSurface,
-	_In_ const PALETTEENTRY       *pDestPalette,
-	_In_ const RECT               *pDestRect,
-	_In_       LPDIRECT3DSURFACE9 pSrcSurface,
-	_In_ const PALETTEENTRY       *pSrcPalette,
-	_In_ const RECT               *pSrcRect,
-	_In_       DWORD              Filter,
-	_In_       D3DCOLOR           ColorKey
-	);
-D3DXLoadSurfaceFromSurfaceType D3DXLoadSurfaceFromSurfacePtr = nullptr;
-
-// D3DXAssembleShader declaration for d3dx9_43.dll
-typedef HRESULT(__stdcall *D3DXAssembleShaderType)(
-	_In_        LPCSTR        pSrcData,
-	_In_        UINT          SrcDataLen,
-	_In_  const D3DXMACRO     *pDefines,
-	_In_        LPD3DXINCLUDE pInclude,
-	_In_        DWORD         Flags,
-	_Out_       LPD3DXBUFFER  *ppShader,
-	_Out_       LPD3DXBUFFER  *ppErrorMsgs
-	);
-D3DXAssembleShaderType D3DXAssembleShaderPtr = nullptr;
-
-// D3DXDisassembleShader declaration for d3dx9_43.dll
-typedef HRESULT(__stdcall *D3DXDisassembleShaderType)(
-	_In_  const DWORD        *pShader,
-	_In_        BOOL         EnableColorCode,
-	_In_        LPCSTR       pComments,
-	_Out_       LPD3DXBUFFER *ppDisassembly
-	);
-D3DXDisassembleShaderType D3DXDisassembleShaderPtr = nullptr;
-
-bool LoadD3dx9()
-{
-	static bool IsD3dx9Loaded = false;
-
-	if (IsD3dx9Loaded)
-	{
-		return true;
-	}
-	else
-	{
-		// Load dll
-		HMODULE dllHandle = LoadLibrary(TEXT("d3dx9_43.dll"));
-
-		// Cannot load dll
-		if (dllHandle == NULL)
-		{
-#ifndef D3D8TO9NOLOG
-			LOG << "Failed to load d3dx9_43.dll!" << std::endl;
-#endif
-			return false;
-		}
-		// Loaded dll file
-		else
-		{
-			IsD3dx9Loaded = true;
-#ifndef D3D8TO9NOLOG
-			LOG << "Loaded d3dx9_43.dll" << std::endl;
-#endif
-
-			// Get pointers to each function
-			D3DXLoadSurfaceFromSurfacePtr = (D3DXLoadSurfaceFromSurfaceType)GetProcAddress(dllHandle, "D3DXLoadSurfaceFromSurface");
-			D3DXAssembleShaderPtr = (D3DXAssembleShaderType)GetProcAddress(dllHandle, "D3DXAssembleShader");
-			D3DXDisassembleShaderPtr = (D3DXDisassembleShaderType)GetProcAddress(dllHandle, "D3DXDisassembleShader");
-
-			// Check function pointers
-#ifndef D3D8TO9NOLOG
-			if (!D3DXLoadSurfaceFromSurfacePtr) LOG << "Failed get address of D3DXLoadSurfaceFromSurface" << std::endl;
-			if (!D3DXAssembleShaderPtr) LOG << "Failed get address of D3DXAssembleShader" << std::endl;
-			if (!D3DXDisassembleShaderPtr) LOG << "Failed get address of D3DXDisassembleShader" << std::endl;
-#endif
-		}
-		return true;
-	}
-}
 struct vertex_shader_info
 {
 	IDirect3DVertexShader9 *shader;
@@ -121,24 +43,27 @@ ULONG STDMETHODCALLTYPE Direct3DDevice8::AddRef()
 ULONG STDMETHODCALLTYPE Direct3DDevice8::Release()
 {
 	ULONG myRef = InterlockedExchange(&_ref, _ref);
-	if (myRef <= 3) // 2 from _current_rendertarget and _current_depthstencil + 1 from the caller
+	
+	auto* rt = _current_rendertarget;
+	auto* ds = _current_depthstencil;
+	if (rt != nullptr && ds != nullptr && myRef == 3)
 	{
-		// Transfer ownership of these members to prevent an infinite loop and unsigned integer underflow on surface refcounts
-		// since releasing those surfaces relleases this device too
-		auto* rt = _current_rendertarget;
-		auto* ds = _current_depthstencil;
 		_current_rendertarget = nullptr;
 		_current_depthstencil = nullptr;
-
-		if (rt != nullptr)
-		{
-			rt->Release();
-		}
-		if (ds != nullptr)
-		{	
-			ds->Release();
-		}
+		rt->Release();
+		ds->Release();
 	}
+	else if (rt != nullptr && myRef == 2)
+	{
+		_current_rendertarget = nullptr;
+		rt->Release();
+	}
+	else if (ds != nullptr && myRef == 2)
+	{
+		_current_depthstencil = nullptr;
+		ds->Release();
+	}
+
 	const auto ref = _proxy->Release();
 	myRef = InterlockedDecrement(&_ref);
 
@@ -636,9 +561,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CopyRects(Direct3DSurface8 *pSourceSu
 
 		if (desc_source.Pool == D3DPOOL_MANAGED || desc_destination.Pool != D3DPOOL_DEFAULT)
 		{
-			if (LoadD3dx9() && D3DXLoadSurfaceFromSurfacePtr)
+			if (D3DXLoadSurfaceFromSurface != nullptr)
 			{
-				hr = (D3DXLoadSurfaceFromSurfacePtr)(pDestinationSurface->GetProxyInterface(), nullptr, &rect_destination, pSourceSurface->GetProxyInterface(), nullptr, &rect_source, D3DX_FILTER_NONE, 0);
+				hr = D3DXLoadSurfaceFromSurface(pDestinationSurface->GetProxyInterface(), nullptr, &rect_destination, pSourceSurface->GetProxyInterface(), nullptr, &rect_source, D3DX_FILTER_NONE, 0);
 			}
 			else
 			{
@@ -1337,9 +1262,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(CONST DWORD *pDecl
 
 		ID3DXBuffer *disassembly = nullptr, *assembly = nullptr, *errors = nullptr;
 
-		if (LoadD3dx9() && D3DXDisassembleShaderPtr)
+		if (D3DXDisassembleShader != nullptr)
 		{
-			hr = (D3DXDisassembleShaderPtr)(pFunction, FALSE, nullptr, &disassembly);
+			hr = D3DXDisassembleShader(pFunction, FALSE, nullptr, &disassembly);
 		}
 		else
 		{
@@ -1455,9 +1380,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(CONST DWORD *pDecl
 		LOG << "> Dumping translated shader assembly:" << std::endl << std::endl << source << std::endl;
 #endif
 
-		if (LoadD3dx9() && D3DXAssembleShaderPtr)
+		if (D3DXAssembleShader != nullptr)
 		{
-			hr = (D3DXAssembleShaderPtr)(source.data(), static_cast<UINT>(source.size()), nullptr, nullptr, 0, &assembly, &errors);
+			hr = D3DXAssembleShader(source.data(), static_cast<UINT>(source.size()), nullptr, nullptr, 0, &assembly, &errors);
 		}
 		else
 		{
@@ -1760,9 +1685,10 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(CONST DWORD *pFunct
 	ID3DXBuffer *disassembly = nullptr, *assembly = nullptr, *errors = nullptr;
 
 	HRESULT hr = E_FAIL;
-	if (LoadD3dx9() && D3DXDisassembleShaderPtr)
+
+	if (D3DXDisassembleShader != nullptr)
 	{
-		hr = (D3DXDisassembleShaderPtr)(pFunction, FALSE, nullptr, &disassembly);
+		hr = D3DXDisassembleShader(pFunction, FALSE, nullptr, &disassembly);
 	}
 
 	if (FAILED(hr))
@@ -1796,9 +1722,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(CONST DWORD *pFunct
 	LOG << "> Dumping translated shader assembly:" << std::endl << std::endl << source << std::endl;
 #endif
 
-	if (LoadD3dx9() && D3DXAssembleShaderPtr)
+	if (D3DXAssembleShader != nullptr)
 	{
-		hr = (D3DXAssembleShaderPtr)(source.data(), static_cast<UINT>(source.size()), nullptr, nullptr, 0, &assembly, &errors);
+		hr = D3DXAssembleShader(source.data(), static_cast<UINT>(source.size()), nullptr, nullptr, 0, &assembly, &errors);
 	}
 	else
 	{

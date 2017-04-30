@@ -65,7 +65,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>res\d3d8.def</ModuleDefinitionFile>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -84,6 +84,7 @@
     <ClInclude Include="res\resource.h" />
     <ClInclude Include="source\d3d8to9.hpp" />
     <ClInclude Include="source\d3d8types.hpp" />
+    <ClInclude Include="source\d3dx9.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\d3d8.def" />

@@ -3,7 +3,12 @@
  * License: https://github.com/crosire/d3d8to9#license
  */
 
+#include "d3dx9.hpp"
 #include "d3d8to9.hpp"
+
+PFN_D3DXAssembleShader D3DXAssembleShader = nullptr;
+PFN_D3DXDisassembleShader D3DXDisassembleShader = nullptr;
+PFN_D3DXLoadSurfaceFromSurface D3DXLoadSurfaceFromSurface = nullptr;
 
 #ifndef D3D8TO9NOLOG
  // Very simple logging for the purpose of debugging only.
@@ -29,6 +34,25 @@ extern "C" Direct3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
 	if (d3d == nullptr)
 	{
 		return nullptr;
+	}
+
+	// Load D3DX
+	if (!D3DXAssembleShader || !D3DXDisassembleShader || !D3DXLoadSurfaceFromSurface)
+	{
+		const HMODULE module = LoadLibrary(TEXT("d3dx9_43.dll"));
+
+		if (module != nullptr)
+		{
+			D3DXAssembleShader = reinterpret_cast<PFN_D3DXAssembleShader>(GetProcAddress(module, "D3DXAssembleShader"));
+			D3DXDisassembleShader = reinterpret_cast<PFN_D3DXDisassembleShader>(GetProcAddress(module, "D3DXDisassembleShader"));
+			D3DXLoadSurfaceFromSurface = reinterpret_cast<PFN_D3DXLoadSurfaceFromSurface>(GetProcAddress(module, "D3DXLoadSurfaceFromSurface"));
+		}
+#ifndef D3D8TO9NOLOG
+		else
+		{
+			LOG << "Failed to load d3dx9_43.dll! Some features will not work correctly." << std::endl;
+		}
+#endif
 	}
 
 	return new Direct3D8(d3d);

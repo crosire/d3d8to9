@@ -5,7 +5,7 @@ d3d8to9 is a pseudo-driver module that intends to improve compatibility and stab
 
 ## Contributing
 
-You'll need Visual Studio 2013 or higher to open the project file and the standalone DirectX SDK, required for the D3DX headers and libraries used for disassembling and assembling the shaders.
+You'll need Visual Studio 2013 or higher to open the project file. It is recommended to install the old standalone DirectX end-user runtime, which is required for the D3DX libraries used for disassembling and assembling the shaders.
 
 Any contributions to the project are welcomed, it's recommended to use GitHub [pull requests](https://help.github.com/articles/using-pull-requests/).
 
