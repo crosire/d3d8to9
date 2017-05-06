@@ -29,13 +29,10 @@ HRESULT STDMETHODCALLTYPE Direct3DTexture8::QueryInterface(REFIID riid, void **p
 }
 ULONG STDMETHODCALLTYPE Direct3DTexture8::AddRef()
 {
-	InterlockedIncrement(&_ref);
-
-	return _proxy->AddRef();
+	return InterlockedIncrement(&_ref);
 }
 ULONG STDMETHODCALLTYPE Direct3DTexture8::Release()
 {
-	const auto ref = _proxy->Release();
 	ULONG myRef = InterlockedDecrement(&_ref);
 
 	if (myRef == 0)
@@ -43,7 +40,7 @@ ULONG STDMETHODCALLTYPE Direct3DTexture8::Release()
 		delete this;
 	}
 
-	return ref;
+	return myRef;
 }
 HRESULT STDMETHODCALLTYPE Direct3DTexture8::GetDevice(Direct3DDevice8 **ppDevice)
 {

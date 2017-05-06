@@ -28,13 +28,10 @@ HRESULT STDMETHODCALLTYPE Direct3DVertexBuffer8::QueryInterface(REFIID riid, voi
 }
 ULONG STDMETHODCALLTYPE Direct3DVertexBuffer8::AddRef()
 {
-	InterlockedIncrement(&_ref);
-
-	return _proxy->AddRef();
+	return InterlockedIncrement(&_ref);
 }
 ULONG STDMETHODCALLTYPE Direct3DVertexBuffer8::Release()
 {
-	const auto ref = _proxy->Release();
 	ULONG myRef = InterlockedDecrement(&_ref);
 
 	if (myRef == 0)
@@ -42,7 +39,7 @@ ULONG STDMETHODCALLTYPE Direct3DVertexBuffer8::Release()
 		delete this;
 	}
 
-	return ref;
+	return myRef;
 }
 HRESULT STDMETHODCALLTYPE Direct3DVertexBuffer8::GetDevice(Direct3DDevice8 **ppDevice)
 {
