@@ -22,7 +22,7 @@ extern "C" Direct3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
 
 	if (!LOG.is_open())
 	{
-		MessageBoxA(nullptr, "Failed to open debug log file \"d3d8.log\"!", nullptr, MB_ICONWARNING);
+		MessageBox(nullptr, TEXT("Failed to open debug log file \"d3d8.log\"!"), nullptr, MB_ICONWARNING);
 	}
 
 	LOG << "Redirecting '" << "Direct3DCreate8" << "(" << SDKVersion << ")' ..." << std::endl;

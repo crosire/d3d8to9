@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="helpers">
+      <UniqueIdentifier>{709e8cf8-ebdb-4573-8524-20b04c6a5883}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources">
+      <UniqueIdentifier>{2d5bd44f-68df-4a2e-967b-57e194c0eac4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\d3d8types.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="source\d3d8to9.cpp" />
+    <ClCompile Include="source\d3d8to9_base.cpp" />
+    <ClCompile Include="source\d3d8to9_device.cpp" />
+    <ClCompile Include="source\d3d8to9_index_buffer.cpp" />
+    <ClCompile Include="source\d3d8to9_surface.cpp" />
+    <ClCompile Include="source\d3d8to9_swap_chain.cpp" />
+    <ClCompile Include="source\d3d8to9_texture.cpp" />
+    <ClCompile Include="source\d3d8to9_vertex_buffer.cpp" />
+    <ClCompile Include="source\d3d8to9_volume.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\d3dx9.hpp">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\d3d8types.hpp">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="res\resource.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\d3d8to9.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\d3d8.def">
+      <Filter>resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="res\d3d8to9.rc">
+      <Filter>resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
