@@ -53,9 +53,9 @@ extern "C" Direct3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
 			#ifndef D3D8TO9NOLOG
 			LOG << "Failed to load d3dx9_43.dll! Some features will not work correctly." << std::endl;
 			#endif
-			int response = MessageBox(nullptr, TEXT("Failed to load d3dx9_43.dll! Some features will not work correctly.\n\nIt's required to install the \"Microsoft DirectX® End-User Runtime\" in order to use d3d8to9.\n\nPlease click \"OK\" to open the official download page (https://www.microsoft.com/en-us/download/details.aspx?id=8109) or \"CANCEL\" to ignore this error and continue."), TEXT("d3d8to9 - ERROR"), MB_ICONWARNING | MB_TOPMOST | MB_SETFOREGROUND | MB_OKCANCEL | MB_DEFBUTTON1);
+			int response = MessageBox(nullptr, TEXT("Failed to load d3dx9_43.dll! Some features will not work correctly.\n\nIt's required to install the \"Microsoft DirectX® End-User Runtime\" in order to use d3d8to9.\n\nPlease click \"OK\" to open the official download page or \"CANCEL\" to ignore this error and continue."), TEXT("d3d8to9 - ERROR"), MB_ICONWARNING | MB_TOPMOST | MB_SETFOREGROUND | MB_OKCANCEL | MB_DEFBUTTON1);
 			if (response == IDOK) {
-				ShellExecute(NULL, TEXT("open"), TEXT("https://www.microsoft.com/en-us/download/details.aspx?displaylang=en&id=35"), NULL, NULL, SW_SHOW);
+				ShellExecute(nullptr, TEXT("open"), TEXT("https://www.microsoft.com/download/details.aspx?id=35"), nullptr, nullptr, SW_SHOW);
 				return nullptr;
 			}
 		}
