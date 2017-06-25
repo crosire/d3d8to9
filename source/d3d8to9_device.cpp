@@ -578,7 +578,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CopyRects(Direct3DSurface8 *pSourceSu
 			}
 			else
 			{
-				hr = E_FAIL;
+				hr = D3DERR_INVALIDCALL;
 			}
 		}
 		else if (SourceDesc.Pool == D3DPOOL_DEFAULT)
@@ -806,6 +806,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderState(D3DRENDERSTATETYPE Sta
 		case D3DRS_ZBIAS:
 			Biased = static_cast<FLOAT>(Value) * -0.000005f;
 			Value = *reinterpret_cast<const DWORD *>(&Biased);
+			State = D3DRS_DEPTHBIAS;
 		default:
 			return ProxyInterface->SetRenderState(State, Value);
 	}
@@ -1248,7 +1249,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 			LOG << "> Failed because token type '" << TokenType << "' is not supported!" << std::endl;
 #endif
 
-			return E_NOTIMPL;
+			return D3DERR_INVALIDCALL;
 		}
 
 		++pDeclaration;
@@ -1283,7 +1284,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 		}
 		else
 		{
-			hr = E_FAIL;
+			hr = D3DERR_INVALIDCALL;
 		}
 
 		if (FAILED(hr))
@@ -1352,8 +1353,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 		}
 
 		#pragma region Fill registers with default value
-		ConstantsCode += "    def c95, 0, 0, 0, 0\n";
-
 		SourceCode.insert(DeclPosition, ConstantsCode);
 
 		for (size_t j = 0; j < 2; j++)
@@ -1362,7 +1361,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 
 			if (SourceCode.find(reg) != std::string::npos)
 			{
-				SourceCode.insert(DeclPosition + ConstantsCode.size(), "    mov " + reg + ", c95 /* initialize output register " + reg + " */\n");
+				SourceCode.insert(DeclPosition + ConstantsCode.size(), "    mov " + reg + ", c0 /* initialize output register " + reg + " */\n");
 			}
 		}
 		for (size_t j = 0; j < 8; j++)
@@ -1371,7 +1370,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 
 			if (SourceCode.find(reg) != std::string::npos)
 			{
-				SourceCode.insert(DeclPosition + ConstantsCode.size(), "    mov " + reg + ", c95 /* initialize output register " + reg + " */\n");
+				SourceCode.insert(DeclPosition + ConstantsCode.size(), "    mov " + reg + ", c0 /* initialize output register " + reg + " */\n");
 			}
 		}
 		for (size_t j = 0; j < 12; j++)
@@ -1380,7 +1379,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 
 			if (SourceCode.find(reg) != std::string::npos)
 			{
-				SourceCode.insert(DeclPosition + ConstantsCode.size(), "    mov " + reg + ", c95 /* initialize register " + reg + " */\n");
+				SourceCode.insert(DeclPosition + ConstantsCode.size(), "    mov " + reg + ", c0 /* initialize register " + reg + " */\n");
 			}
 		}
 		#pragma endregion
@@ -1401,7 +1400,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 		}
 		else
 		{
-			hr = E_FAIL;
+			hr = D3DERR_INVALIDCALL;
 		}
 
 		Disassembly->Release();
@@ -1567,7 +1566,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetVertexShaderDeclaration(DWORD Hand
 	LOG << "> 'IDirect3DDevice8::GetVertexShaderDeclaration' is not implemented!" << std::endl;
 #endif
 
-	return E_NOTIMPL;
+	return D3DERR_INVALIDCALL;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetVertexShaderFunction(DWORD Handle, void *pData, DWORD *pSizeOfData)
 {
@@ -1700,7 +1699,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 
 	ID3DXBuffer *Disassembly = nullptr, *Assembly = nullptr, *ErrorBuffer = nullptr;
 
-	HRESULT hr = E_FAIL;
+	HRESULT hr = D3DERR_INVALIDCALL;
 
 	if (D3DXDisassembleShader != nullptr)
 	{
@@ -1744,7 +1743,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 	}
 	else
 	{
-		hr = E_FAIL;
+		hr = D3DERR_INVALIDCALL;
 	}
 
 	Disassembly->Release();
