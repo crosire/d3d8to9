@@ -1386,9 +1386,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 
 		SourceCode = std::regex_replace(SourceCode, std::regex("    \\/\\/ vs\\.1\\.1\\n((?! ).+\\n)+"), "");
 		SourceCode = std::regex_replace(SourceCode, std::regex("(oFog|oPts)\\.x"), "$1 /* removed swizzle */");
-		SourceCode = std::regex_replace(SourceCode, std::regex("(add|sub|mul|min|max) (oFog|oPts), ([cr][0-9]+), (.+)\\n"), "$1 $2, $3.x /* added swizzle */, $4\n");
-		SourceCode = std::regex_replace(SourceCode, std::regex("(add|sub|mul|min|max) (oFog|oPts), (.+), ([cr][0-9]+)\\n"), "$1 $2, $3, $4.x /* added swizzle */\n");
-		SourceCode = std::regex_replace(SourceCode, std::regex("mov (oFog|oPts)(.*), (-?)([crv][0-9]+)(?!\\.)"), "mov $1$2, $3$4.x /* select single component */");
+		SourceCode = std::regex_replace(SourceCode, std::regex("(add|sub|mul|min|max) (oFog|oPts), ([cr][0-9]+)(?![0-9]), (.+)\\n"), "$1 $2, $3.x /* added swizzle */, $4\n");
+		SourceCode = std::regex_replace(SourceCode, std::regex("(add|sub|mul|min|max) (oFog|oPts), (.+), ([cr][0-9]+)(?![0-9])\\n"), "$1 $2, $3, $4.x /* added swizzle */\n");
+		SourceCode = std::regex_replace(SourceCode, std::regex("mov (oFog|oPts)(.*), (-?)([crv][0-9]+)(?![0-9])(?!\\.)"), "mov $1$2, $3$4.x /* select single component */");
 
 #ifndef D3D8TO9NOLOG
 		LOG << "> Dumping translated shader assembly:" << std::endl << std::endl << SourceCode << std::endl;
@@ -1730,7 +1730,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 	}
 
 	SourceCode = std::regex_replace(SourceCode, std::regex("    \\/\\/ ps\\.1\\.[1-4]\\n((?! ).+\\n)+"), "");
-	SourceCode = std::regex_replace(SourceCode, std::regex("(1?-)(c[0-9]+)"), "$2 /* removed modifier $1 */");
+	SourceCode = std::regex_replace(SourceCode, std::regex("(1?-)(c[0-9]+)(?![0-9])"), "$2 /* removed modifier $1 */");
 	SourceCode = std::regex_replace(SourceCode, std::regex("(c[0-9]+)(_bx2|_bias)"), "$1 /* removed modifier $2 */");
 
 #ifndef D3D8TO9NOLOG
