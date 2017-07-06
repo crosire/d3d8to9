@@ -167,13 +167,11 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE DeletePatch(UINT Handle);
 
 private:
-	ULONG RefCount = 1;
 	Direct3D8 *const D3D;
 	IDirect3DDevice9 *const ProxyInterface;
 	INT CurrentBaseVertexIndex = 0;
 	const BOOL ZBufferDiscarding = FALSE;
 	DWORD CurrentVertexShaderHandle = 0, CurrentPixelShaderHandle = 0;
-	Direct3DSurface8 *CurrentRenderTarget = nullptr, *CurrentDepthStencilSurface = nullptr;
 };
 
 class Direct3DSwapChain8 : public IUnknown
@@ -228,6 +226,8 @@ public:
 	Direct3DTexture8(Direct3DDevice8 *device, IDirect3DTexture9 *ProxyInterface);
 	~Direct3DTexture8();
 
+	void DeleteMe(bool CleanUp = true);
+
 	IDirect3DTexture9 *GetProxyInterface() const { return ProxyInterface; }
 
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObj) override;
@@ -254,7 +254,7 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE AddDirtyRect(const RECT *pDirtyRect);
 
 private:
-	ULONG RefCount = 1;
+	bool CleanUpFlag = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DTexture9 *const ProxyInterface;
 };
@@ -266,6 +266,8 @@ class Direct3DCubeTexture8 : public Direct3DBaseTexture8
 public:
 	Direct3DCubeTexture8(Direct3DDevice8 *device, IDirect3DCubeTexture9 *ProxyInterface);
 	~Direct3DCubeTexture8();
+
+	void DeleteMe(bool CleanUp = true);
 
 	IDirect3DCubeTexture9 *GetProxyInterface() const { return ProxyInterface; }
 
@@ -293,7 +295,7 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE AddDirtyRect(D3DCUBEMAP_FACES FaceType, const RECT *pDirtyRect);
 
 private:
-	ULONG RefCount = 1;
+	bool CleanUpFlag = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DCubeTexture9 *const ProxyInterface;
 };
@@ -305,6 +307,8 @@ class Direct3DVolumeTexture8 : public Direct3DBaseTexture8
 public:
 	Direct3DVolumeTexture8(Direct3DDevice8 *device, IDirect3DVolumeTexture9 *ProxyInterface);
 	~Direct3DVolumeTexture8();
+
+	void DeleteMe(bool CleanUp = true);
 
 	IDirect3DVolumeTexture9 *GetProxyInterface() const { return ProxyInterface; }
 
@@ -332,7 +336,7 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE AddDirtyBox(const D3DBOX *pDirtyBox);
 
 private:
-	ULONG RefCount = 1;
+	bool CleanUpFlag = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DVolumeTexture9 *const ProxyInterface;
 };
@@ -345,6 +349,8 @@ class Direct3DSurface8 : public IUnknown
 public:
 	Direct3DSurface8(Direct3DDevice8 *device, IDirect3DSurface9 *ProxyInterface);
 	~Direct3DSurface8();
+
+	void DeleteMe(bool CleanUp = true);
 
 	IDirect3DSurface9 *GetProxyInterface() const { return ProxyInterface; }
 
@@ -362,7 +368,7 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE UnlockRect();
 
 private:
-	ULONG RefCount = 1;
+	bool CleanUpFlag = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DSurface9 *const ProxyInterface;
 };
@@ -375,6 +381,8 @@ class Direct3DVolume8 : public IUnknown
 public:
 	Direct3DVolume8(Direct3DDevice8 *Device, IDirect3DVolume9 *ProxyInterface);
 	~Direct3DVolume8();
+
+	void DeleteMe(bool CleanUp = true);
 
 	IDirect3DVolume9 *GetProxyInterface() const { return ProxyInterface; }
 
@@ -392,7 +400,7 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE UnlockBox();
 
 private:
-	ULONG RefCount = 1;
+	bool CleanUpFlag = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DVolume9 *const ProxyInterface;
 };
@@ -405,6 +413,8 @@ class Direct3DVertexBuffer8 : public Direct3DResource8
 public:
 	Direct3DVertexBuffer8(Direct3DDevice8 *Device, IDirect3DVertexBuffer9 *ProxyInterface);
 	~Direct3DVertexBuffer8();
+
+	void DeleteMe(bool CleanUp = true);
 
 	IDirect3DVertexBuffer9 *GetProxyInterface() const { return ProxyInterface; }
 
@@ -426,7 +436,7 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE GetDesc(D3DVERTEXBUFFER_DESC *pDesc);
 
 private:
-	ULONG RefCount = 1;
+	bool CleanUpFlag = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DVertexBuffer9 *const ProxyInterface;
 };
@@ -439,6 +449,8 @@ class Direct3DIndexBuffer8 : public Direct3DResource8
 public:
 	Direct3DIndexBuffer8(Direct3DDevice8 *Device, IDirect3DIndexBuffer9 *ProxyInterface);
 	~Direct3DIndexBuffer8();
+
+	void DeleteMe(bool CleanUp = true);
 
 	IDirect3DIndexBuffer9 *GetProxyInterface() const { return ProxyInterface; }
 
@@ -460,7 +472,7 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE GetDesc(D3DINDEXBUFFER_DESC *pDesc);
 
 private:
-	ULONG RefCount = 1;
+	bool CleanUpFlag = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DIndexBuffer9 *const ProxyInterface;
 };
