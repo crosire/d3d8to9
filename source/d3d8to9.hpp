@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <vector>
 #include "d3d8types.hpp"
 
 class __declspec(uuid("1DD9E8DA-1C77-4D40-B0CF-98FEFDFF9512")) Direct3D8;
@@ -27,6 +28,7 @@ class Direct3D8 : public IUnknown
 
 public:
 	Direct3D8(IDirect3D9 *ProxyInterface);
+	~Direct3D8();
 
 	IDirect3D9 *GetProxyInterface() const { return ProxyInterface; }
 
@@ -50,6 +52,10 @@ public:
 
 private:
 	IDirect3D9 *const ProxyInterface;
+	static const UINT MaxAdapters = 8;
+	UINT CurrentAdapterCount = 0;
+	UINT CurrentAdapterModeCount[MaxAdapters] = { 0 };
+	std::vector<D3DDISPLAYMODE> CurrentAdapterModes[MaxAdapters];
 };
 
 class Direct3DDevice8 : public IUnknown
