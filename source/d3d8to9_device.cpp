@@ -510,7 +510,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CopyRects(Direct3DSurface8 *pSourceSu
 		{
 			if (D3DXLoadSurfaceFromSurface != nullptr)
 			{
-				LOG << "called D3DXLoadSurfaceFromSurface\n";
 				hr = D3DXLoadSurfaceFromSurface(pDestinationSurface->GetProxyInterface(), nullptr, &DestinationRect, pSourceSurface->GetProxyInterface(), nullptr, &SourceRect, D3DX_FILTER_NONE, 0);
 			}
 			else
