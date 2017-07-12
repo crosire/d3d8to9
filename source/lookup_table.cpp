@@ -103,7 +103,7 @@ void AddressLookupTable::SaveAddress(Direct3DSurface8* pSurface8, IDirect3DSurfa
 }
 void AddressLookupTable::DeleteAddress(Direct3DSurface8* pSurface8)
 {
-	FindAddress(reinterpret_cast<void*>(pSurface8), SurfaceVector);
+	DeleteAddress(reinterpret_cast<void*>(pSurface8), SurfaceVector);
 }
 
 
@@ -118,7 +118,7 @@ void AddressLookupTable::SaveAddress(Direct3DTexture8* pTexture8, IDirect3DTextu
 }
 void AddressLookupTable::DeleteAddress(Direct3DTexture8* pTexture8)
 {
-	FindAddress(reinterpret_cast<void*>(pTexture8), TextureVector);
+	DeleteAddress(reinterpret_cast<void*>(pTexture8), TextureVector);
 }
 
 
@@ -133,7 +133,7 @@ void AddressLookupTable::SaveAddress(Direct3DVolumeTexture8* pVolumeTexture8, ID
 }
 void AddressLookupTable::DeleteAddress(Direct3DVolumeTexture8* pVolumeTexture8)
 {
-	FindAddress(reinterpret_cast<void*>(pVolumeTexture8), VolumeTextureVector);
+	DeleteAddress(reinterpret_cast<void*>(pVolumeTexture8), VolumeTextureVector);
 }
 
 
@@ -148,7 +148,7 @@ void AddressLookupTable::SaveAddress(Direct3DCubeTexture8* pCubeTexture8, IDirec
 }
 void AddressLookupTable::DeleteAddress(Direct3DCubeTexture8* pCubeTexture8)
 {
-	FindAddress(reinterpret_cast<void*>(pCubeTexture8), CubeTextureVector);
+	DeleteAddress(reinterpret_cast<void*>(pCubeTexture8), CubeTextureVector);
 }
 
 
@@ -163,7 +163,7 @@ void AddressLookupTable::SaveAddress(Direct3DVolume8* pVolume8, IDirect3DVolume9
 }
 void AddressLookupTable::DeleteAddress(Direct3DVolume8* pVolume8)
 {
-	FindAddress(reinterpret_cast<void*>(pVolume8), VolumeVector);
+	DeleteAddress(reinterpret_cast<void*>(pVolume8), VolumeVector);
 }
 
 
@@ -178,7 +178,7 @@ void AddressLookupTable::SaveAddress(Direct3DVertexBuffer8* pVertexBuffer8, IDir
 }
 void AddressLookupTable::DeleteAddress(Direct3DVertexBuffer8* pVertexBuffer8)
 {
-	FindAddress(reinterpret_cast<void*>(pVertexBuffer8), VertexBufferVector);
+	DeleteAddress(reinterpret_cast<void*>(pVertexBuffer8), VertexBufferVector);
 }
 
 
@@ -193,7 +193,7 @@ void AddressLookupTable::SaveAddress(Direct3DIndexBuffer8* pIndexBuffer8, IDirec
 }
 void AddressLookupTable::DeleteAddress(Direct3DIndexBuffer8* pIndexBuffer8)
 {
-	FindAddress(reinterpret_cast<void*>(pIndexBuffer8), IndexBufferVector);
+	DeleteAddress(reinterpret_cast<void*>(pIndexBuffer8), IndexBufferVector);
 }
 
 
@@ -208,5 +208,5 @@ void AddressLookupTable::SaveAddress(Direct3DSwapChain8* pSwapChain8, IDirect3DS
 }
 void AddressLookupTable::DeleteAddress(Direct3DSwapChain8* pSwapChain8)
 {
-	FindAddress(reinterpret_cast<void*>(pSwapChain8), SwapChainVector);
+	DeleteAddress(reinterpret_cast<void*>(pSwapChain8), SwapChainVector);
 }
