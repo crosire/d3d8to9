@@ -19,11 +19,11 @@ Direct3DDevice8::Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterfac
 	D3D(d3d), ProxyInterface(ProxyInterface), ZBufferDiscarding(EnableZBufferDiscarding)
 {
 	D3D->AddRef();
-	MyDirect3DCache = new Direct3DCache;
+	ProxyAddressLookupTable = new AddressLookupTable;
 }
 Direct3DDevice8::~Direct3DDevice8()
 {
-	delete MyDirect3DCache;
+	delete ProxyAddressLookupTable;
 	ProxyInterface->Release();
 	D3D->Release();
 }
@@ -204,7 +204,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetBackBuffer(UINT iBackBuffer, D3DBA
 		return hr;
 	}
 
-	*ppBackBuffer = MyDirect3DCache->GetDirect3D(SurfaceInterface);
+	*ppBackBuffer = ProxyAddressLookupTable->FindAddress(SurfaceInterface);
 	if (*ppBackBuffer == nullptr)
 	{
 		*ppBackBuffer = new Direct3DSurface8(this, SurfaceInterface);
@@ -623,7 +623,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetRenderTarget(Direct3DSurface8 **pp
 		return hr;
 	}
 
-	*ppRenderTarget = MyDirect3DCache->GetDirect3D(SurfaceInterface);
+	*ppRenderTarget = ProxyAddressLookupTable->FindAddress(SurfaceInterface);
 	if (*ppRenderTarget == nullptr)
 	{
 		*ppRenderTarget = new Direct3DSurface8(this, SurfaceInterface);
@@ -647,7 +647,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetDepthStencilSurface(Direct3DSurfac
 		return hr;
 	}
 
-	*ppZStencilSurface = MyDirect3DCache->GetDirect3D(SurfaceInterface);
+	*ppZStencilSurface = ProxyAddressLookupTable->FindAddress(SurfaceInterface);
 	if (*ppZStencilSurface == nullptr)
 	{
 		*ppZStencilSurface = new Direct3DSurface8(this, SurfaceInterface);
@@ -861,7 +861,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetTexture(DWORD Stage, Direct3DBaseT
 		{
 			case D3DRTYPE_TEXTURE:
 				BaseTextureInterface->QueryInterface(IID_PPV_ARGS(&TextureInterface));
-				*ppTexture = MyDirect3DCache->GetDirect3D(TextureInterface);
+				*ppTexture = ProxyAddressLookupTable->FindAddress(TextureInterface);
 				if (*ppTexture == nullptr)
 				{
 					*ppTexture = new Direct3DTexture8(this, TextureInterface);
@@ -869,7 +869,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetTexture(DWORD Stage, Direct3DBaseT
 				break;
 			case D3DRTYPE_VOLUMETEXTURE:
 				BaseTextureInterface->QueryInterface(IID_PPV_ARGS(&VolumeTextureInterface));
-				*ppTexture = MyDirect3DCache->GetDirect3D(TextureInterface);
+				*ppTexture = ProxyAddressLookupTable->FindAddress(TextureInterface);
 				if (*ppTexture == nullptr)
 				{
 					*ppTexture = new Direct3DVolumeTexture8(this, VolumeTextureInterface);
@@ -877,7 +877,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetTexture(DWORD Stage, Direct3DBaseT
 				break;
 			case D3DRTYPE_CUBETEXTURE:
 				BaseTextureInterface->QueryInterface(IID_PPV_ARGS(&CubeTextureInterface));
-				*ppTexture = MyDirect3DCache->GetDirect3D(TextureInterface);
+				*ppTexture = ProxyAddressLookupTable->FindAddress(TextureInterface);
 				if (*ppTexture == nullptr)
 				{
 					*ppTexture = new Direct3DCubeTexture8(this, CubeTextureInterface);
@@ -1568,7 +1568,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetStreamSource(UINT StreamNumber, Di
 
 	if (VertexBufferInterface != nullptr)
 	{
-		*ppStreamData = MyDirect3DCache->GetDirect3D(VertexBufferInterface);
+		*ppStreamData = ProxyAddressLookupTable->FindAddress(VertexBufferInterface);
 		if (*ppStreamData == nullptr)
 		{
 			*ppStreamData = new Direct3DVertexBuffer8(this, VertexBufferInterface);
@@ -1613,7 +1613,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetIndices(Direct3DIndexBuffer8 **ppI
 
 	if (IntexBufferInterface != nullptr)
 	{
-		*ppIndexData = MyDirect3DCache->GetDirect3D(IntexBufferInterface);
+		*ppIndexData = ProxyAddressLookupTable->FindAddress(IntexBufferInterface);
 		if (*ppIndexData == nullptr)
 		{
 			*ppIndexData = new Direct3DIndexBuffer8(this, IntexBufferInterface);
