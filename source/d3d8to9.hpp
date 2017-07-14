@@ -21,6 +21,8 @@ class __declspec(uuid("BD7349F5-14F1-42E4-9C79-972380DB40C0")) Direct3DVolume8;
 class __declspec(uuid("8AEEEAC7-05F9-44D4-B591-000B0DF1CB95")) Direct3DVertexBuffer8;
 class __declspec(uuid("0E689C9A-053D-44A0-9D92-DB0E3D750F86")) Direct3DIndexBuffer8;
 
+#include "lookup_table.hpp"
+
 class Direct3D8 : public IUnknown
 {
 	Direct3D8(const Direct3D8 &) = delete;
@@ -68,6 +70,8 @@ public:
 	~Direct3DDevice8();
 
 	IDirect3DDevice9 *GetProxyInterface() const { return ProxyInterface; }
+
+	AddressLookupTable* ProxyAddressLookupTable;
 
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObj) override;
 	virtual ULONG STDMETHODCALLTYPE AddRef() override;
@@ -169,16 +173,14 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE DeletePatch(UINT Handle);
 
 private:
-	ULONG RefCount = 1;
 	Direct3D8 *const D3D;
 	IDirect3DDevice9 *const ProxyInterface;
 	INT CurrentBaseVertexIndex = 0;
 	const BOOL ZBufferDiscarding = FALSE;
 	DWORD CurrentVertexShaderHandle = 0, CurrentPixelShaderHandle = 0;
-	Direct3DSurface8 *CurrentRenderTarget = nullptr, *CurrentDepthStencilSurface = nullptr;
 };
 
-class Direct3DSwapChain8 : public IUnknown
+class Direct3DSwapChain8 : public IUnknown, public AddressLookupTableObject
 {
 	Direct3DSwapChain8(const Direct3DSwapChain8 &) = delete;
 	Direct3DSwapChain8 &operator=(const Direct3DSwapChain8 &) = delete;
@@ -197,6 +199,7 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE GetBackBuffer(UINT iBackBuffer, D3DBACKBUFFER_TYPE Type, Direct3DSurface8 **ppBackBuffer);
 
 private:
+	bool Active = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DSwapChain9 *const ProxyInterface;
 };
@@ -221,7 +224,7 @@ public:
 	virtual DWORD STDMETHODCALLTYPE GetLOD() = 0;
 	virtual DWORD STDMETHODCALLTYPE GetLevelCount() = 0;
 };
-class Direct3DTexture8 : public Direct3DBaseTexture8
+class Direct3DTexture8 : public Direct3DBaseTexture8, public AddressLookupTableObject
 {
 	Direct3DTexture8(const Direct3DTexture8 &) = delete;
 	Direct3DTexture8 &operator=(const Direct3DTexture8 &) = delete;
@@ -256,11 +259,11 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE AddDirtyRect(const RECT *pDirtyRect);
 
 private:
-	ULONG RefCount = 1;
+	bool Active = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DTexture9 *const ProxyInterface;
 };
-class Direct3DCubeTexture8 : public Direct3DBaseTexture8
+class Direct3DCubeTexture8 : public Direct3DBaseTexture8, public AddressLookupTableObject
 {
 	Direct3DCubeTexture8(const Direct3DCubeTexture8 &) = delete;
 	Direct3DCubeTexture8 &operator=(const Direct3DCubeTexture8 &) = delete;
@@ -295,11 +298,11 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE AddDirtyRect(D3DCUBEMAP_FACES FaceType, const RECT *pDirtyRect);
 
 private:
-	ULONG RefCount = 1;
+	bool Active = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DCubeTexture9 *const ProxyInterface;
 };
-class Direct3DVolumeTexture8 : public Direct3DBaseTexture8
+class Direct3DVolumeTexture8 : public Direct3DBaseTexture8, public AddressLookupTableObject
 {
 	Direct3DVolumeTexture8(const Direct3DVolumeTexture8 &) = delete;
 	Direct3DVolumeTexture8 &operator=(const Direct3DVolumeTexture8 &) = delete;
@@ -334,12 +337,12 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE AddDirtyBox(const D3DBOX *pDirtyBox);
 
 private:
-	ULONG RefCount = 1;
+	bool Active = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DVolumeTexture9 *const ProxyInterface;
 };
 
-class Direct3DSurface8 : public IUnknown
+class Direct3DSurface8 : public IUnknown, public AddressLookupTableObject
 {
 	Direct3DSurface8(const Direct3DSurface8 &) = delete;
 	Direct3DSurface8 &operator=(const Direct3DSurface8 &) = delete;
@@ -364,12 +367,12 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE UnlockRect();
 
 private:
-	ULONG RefCount = 1;
+	bool Active = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DSurface9 *const ProxyInterface;
 };
 
-class Direct3DVolume8 : public IUnknown
+class Direct3DVolume8 : public IUnknown, public AddressLookupTableObject
 {
 	Direct3DVolume8(const Direct3DVolume8 &) = delete;
 	Direct3DVolume8 &operator=(const Direct3DVolume8 &) = delete;
@@ -394,12 +397,12 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE UnlockBox();
 
 private:
-	ULONG RefCount = 1;
+	bool Active = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DVolume9 *const ProxyInterface;
 };
 
-class Direct3DVertexBuffer8 : public Direct3DResource8
+class Direct3DVertexBuffer8 : public Direct3DResource8, public AddressLookupTableObject
 {
 	Direct3DVertexBuffer8(const Direct3DVertexBuffer8 &) = delete;
 	Direct3DVertexBuffer8 &operator=(const Direct3DVertexBuffer8 &) = delete;
@@ -428,12 +431,12 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE GetDesc(D3DVERTEXBUFFER_DESC *pDesc);
 
 private:
-	ULONG RefCount = 1;
+	bool Active = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DVertexBuffer9 *const ProxyInterface;
 };
 
-class Direct3DIndexBuffer8 : public Direct3DResource8
+class Direct3DIndexBuffer8 : public Direct3DResource8, public AddressLookupTableObject
 {
 	Direct3DIndexBuffer8(const Direct3DIndexBuffer8 &) = delete;
 	Direct3DIndexBuffer8 &operator=(const Direct3DIndexBuffer8 &) = delete;
@@ -462,7 +465,7 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE GetDesc(D3DINDEXBUFFER_DESC *pDesc);
 
 private:
-	ULONG RefCount = 1;
+	bool Active = true;
 	Direct3DDevice8 *const Device;
 	IDirect3DIndexBuffer9 *const ProxyInterface;
 };

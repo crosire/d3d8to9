@@ -10,10 +10,19 @@ Direct3DSwapChain8::Direct3DSwapChain8(Direct3DDevice8 *Device, IDirect3DSwapCha
 	Device(Device), ProxyInterface(ProxyInterface)
 {
 	Device->AddRef();
+	Device->ProxyAddressLookupTable->SaveAddress(this, ProxyInterface);
 }
 Direct3DSwapChain8::~Direct3DSwapChain8()
 {
-	Device->Release();
+	if (CleanUpFlag)
+	{
+		Device->ProxyAddressLookupTable->DeleteAddress(this);
+		if (Active)
+		{
+			Active = false;
+			Device->Release();
+		}
+	}
 }
 
 HRESULT STDMETHODCALLTYPE Direct3DSwapChain8::QueryInterface(REFIID riid, void **ppvObj)
@@ -45,7 +54,12 @@ ULONG STDMETHODCALLTYPE Direct3DSwapChain8::Release()
 
 	if (LastRefCount == 0)
 	{
-		delete this;
+		if (Active)
+		{
+			Active = false;
+			Device->Release();
+		}
+		//delete this;
 	}
 
 	return LastRefCount;
@@ -75,7 +89,7 @@ HRESULT STDMETHODCALLTYPE Direct3DSwapChain8::GetBackBuffer(UINT iBackBuffer, D3
 		return hr;
 	}
 
-	*ppBackBuffer = new Direct3DSurface8(Device, SurfaceInterface);
+	*ppBackBuffer = Device->ProxyAddressLookupTable->FindAddress(SurfaceInterface);
 
 	return D3D_OK;
 }

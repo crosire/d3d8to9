@@ -10,11 +10,19 @@ Direct3DVolume8::Direct3DVolume8(Direct3DDevice8 *Device, IDirect3DVolume9 *Prox
 	Device(Device), ProxyInterface(ProxyInterface)
 {
 	Device->AddRef();
+	Device->ProxyAddressLookupTable->SaveAddress(this, ProxyInterface);
 }
 Direct3DVolume8::~Direct3DVolume8()
 {
-	ProxyInterface->Release();
-	Device->Release();
+	if (CleanUpFlag)
+	{
+		Device->ProxyAddressLookupTable->DeleteAddress(this);
+		if (Active)
+		{
+			Active = false;
+			Device->Release();
+		}
+	}
 }
 
 HRESULT STDMETHODCALLTYPE Direct3DVolume8::QueryInterface(REFIID riid, void **ppvObj)
@@ -38,15 +46,20 @@ HRESULT STDMETHODCALLTYPE Direct3DVolume8::QueryInterface(REFIID riid, void **pp
 }
 ULONG STDMETHODCALLTYPE Direct3DVolume8::AddRef()
 {
-	return InterlockedIncrement(&RefCount);
+	return ProxyInterface->AddRef();
 }
 ULONG STDMETHODCALLTYPE Direct3DVolume8::Release()
 {
-	const ULONG LastRefCount = InterlockedDecrement(&RefCount);
+	const ULONG LastRefCount = ProxyInterface->Release();
 
 	if (LastRefCount == 0)
 	{
-		delete this;
+		if (Active)
+		{
+			Active = false;
+			Device->Release();
+		}
+		//delete this;
 	}
 
 	return LastRefCount;
