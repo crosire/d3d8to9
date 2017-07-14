@@ -36,7 +36,7 @@
       <Filter>resources</Filter>
     </ClInclude>
     <ClInclude Include="source\d3d8to9.hpp" />
-    <ClInclude Include="source\lookup_table.h">
+    <ClInclude Include="source\lookup_table.hpp">
       <Filter>helpers</Filter>
     </ClInclude>
   </ItemGroup>
