@@ -81,12 +81,14 @@ class AddressLookupTableObject
 public:
 	virtual ~AddressLookupTableObject() { }
 
-	void DeleteMe(bool CleanUp = true)
+	void DeleteMe(bool CleanUp)
 	{
 		CleanUpFlag = CleanUp;
+
 		delete this;
 	}
 
 protected:
+	bool Active = true;
 	bool CleanUpFlag = true;
 };

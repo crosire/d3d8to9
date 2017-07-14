@@ -5,46 +5,16 @@ AddressLookupTable::AddressLookupTable(Direct3DDevice8 *Device) :
 {
 	// Do nothing
 }
-
 AddressLookupTable::~AddressLookupTable()
 {
-	for (int x = 0; x < SizeOfVector; x++)
+	for (UINT i = 0; i < SizeOfVector; i++)
 	{
-		while (AddressVector[x].size() > 0)
+		while (AddressVector[i].size())
 		{
-			if (AddressVector[x].back().Address8)
-			{
-				switch (x)
-				{
-				case SurfaceVector:
-					reinterpret_cast<Direct3DSurface8*>(AddressVector[x].back().Address8)->DeleteMe(false);
-					break;
-				case TextureVector:
-					reinterpret_cast<Direct3DTexture8*>(AddressVector[x].back().Address8)->DeleteMe(false);
-					break;
-				case VolumeTextureVector:
-					reinterpret_cast<Direct3DVolumeTexture8*>(AddressVector[x].back().Address8)->DeleteMe(false);
-					break;
-				case CubeTextureVector:
-					reinterpret_cast<Direct3DCubeTexture8*>(AddressVector[x].back().Address8)->DeleteMe(false);
-					break;
-				case VolumeVector:
-					reinterpret_cast<Direct3DVolume8*>(AddressVector[x].back().Address8)->DeleteMe(false);
-					break;
-				case VertexBufferVector:
-					reinterpret_cast<Direct3DVertexBuffer8*>(AddressVector[x].back().Address8)->DeleteMe(false);
-					break;
-				case IndexBufferVector:
-					reinterpret_cast<Direct3DIndexBuffer8*>(AddressVector[x].back().Address8)->DeleteMe(false);
-					break;
-				case SwapChainVector:
-					reinterpret_cast<Direct3DSwapChain8*>(AddressVector[x].back().Address8)->DeleteMe(false);
-					break;
-				}
-			}
-			AddressVector[x].pop_back();
+			static_cast<AddressLookupTableObject *>(AddressVector[i].back().Address8)->DeleteMe(false);
+
+			AddressVector[i].pop_back();
 		}
-		AddressVector[x].clear();
 	}
 }
 
