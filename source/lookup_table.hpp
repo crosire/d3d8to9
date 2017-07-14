@@ -12,7 +12,7 @@ class AddressLookupTable
 {
 	struct AddressStruct
 	{
-		void *Address8 = nullptr;
+		class AddressLookupTableObject *Address8 = nullptr;
 		void *Address9 = nullptr;
 	};
 

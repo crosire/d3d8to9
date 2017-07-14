@@ -180,7 +180,7 @@ private:
 	DWORD CurrentVertexShaderHandle = 0, CurrentPixelShaderHandle = 0;
 };
 
-class Direct3DSwapChain8 : public IUnknown, private AddressLookupTableObject
+class Direct3DSwapChain8 : public IUnknown, public AddressLookupTableObject
 {
 	Direct3DSwapChain8(const Direct3DSwapChain8 &) = delete;
 	Direct3DSwapChain8 &operator=(const Direct3DSwapChain8 &) = delete;
@@ -223,7 +223,7 @@ public:
 	virtual DWORD STDMETHODCALLTYPE GetLOD() = 0;
 	virtual DWORD STDMETHODCALLTYPE GetLevelCount() = 0;
 };
-class Direct3DTexture8 : public Direct3DBaseTexture8, private AddressLookupTableObject
+class Direct3DTexture8 : public Direct3DBaseTexture8, public AddressLookupTableObject
 {
 	Direct3DTexture8(const Direct3DTexture8 &) = delete;
 	Direct3DTexture8 &operator=(const Direct3DTexture8 &) = delete;
@@ -261,7 +261,7 @@ private:
 	Direct3DDevice8 *const Device;
 	IDirect3DTexture9 *const ProxyInterface;
 };
-class Direct3DCubeTexture8 : public Direct3DBaseTexture8, private AddressLookupTableObject
+class Direct3DCubeTexture8 : public Direct3DBaseTexture8, public AddressLookupTableObject
 {
 	Direct3DCubeTexture8(const Direct3DCubeTexture8 &) = delete;
 	Direct3DCubeTexture8 &operator=(const Direct3DCubeTexture8 &) = delete;
@@ -299,7 +299,7 @@ private:
 	Direct3DDevice8 *const Device;
 	IDirect3DCubeTexture9 *const ProxyInterface;
 };
-class Direct3DVolumeTexture8 : public Direct3DBaseTexture8, private AddressLookupTableObject
+class Direct3DVolumeTexture8 : public Direct3DBaseTexture8, public AddressLookupTableObject
 {
 	Direct3DVolumeTexture8(const Direct3DVolumeTexture8 &) = delete;
 	Direct3DVolumeTexture8 &operator=(const Direct3DVolumeTexture8 &) = delete;
@@ -338,7 +338,7 @@ private:
 	IDirect3DVolumeTexture9 *const ProxyInterface;
 };
 
-class Direct3DSurface8 : public IUnknown, private AddressLookupTableObject
+class Direct3DSurface8 : public IUnknown, public AddressLookupTableObject
 {
 	Direct3DSurface8(const Direct3DSurface8 &) = delete;
 	Direct3DSurface8 &operator=(const Direct3DSurface8 &) = delete;
@@ -367,7 +367,7 @@ private:
 	IDirect3DSurface9 *const ProxyInterface;
 };
 
-class Direct3DVolume8 : public IUnknown, private AddressLookupTableObject
+class Direct3DVolume8 : public IUnknown, public AddressLookupTableObject
 {
 	Direct3DVolume8(const Direct3DVolume8 &) = delete;
 	Direct3DVolume8 &operator=(const Direct3DVolume8 &) = delete;
@@ -396,7 +396,7 @@ private:
 	IDirect3DVolume9 *const ProxyInterface;
 };
 
-class Direct3DVertexBuffer8 : public Direct3DResource8, private AddressLookupTableObject
+class Direct3DVertexBuffer8 : public Direct3DResource8, public AddressLookupTableObject
 {
 	Direct3DVertexBuffer8(const Direct3DVertexBuffer8 &) = delete;
 	Direct3DVertexBuffer8 &operator=(const Direct3DVertexBuffer8 &) = delete;
@@ -429,7 +429,7 @@ private:
 	IDirect3DVertexBuffer9 *const ProxyInterface;
 };
 
-class Direct3DIndexBuffer8 : public Direct3DResource8, private AddressLookupTableObject
+class Direct3DIndexBuffer8 : public Direct3DResource8, public AddressLookupTableObject
 {
 	Direct3DIndexBuffer8(const Direct3DIndexBuffer8 &) = delete;
 	Direct3DIndexBuffer8 &operator=(const Direct3DIndexBuffer8 &) = delete;
