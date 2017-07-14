@@ -1,7 +1,7 @@
 #pragma once
 
-#include <iostream>
 #include <vector>
+#include <iostream>
 
 class AddressLookupTable
 {

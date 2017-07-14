@@ -1648,30 +1648,29 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 		SourceCode.replace(VersionPosition, 6, "ps_1_1");
 	}
 
-	// Get number of arithmetic used max of 8 is allowed
-	int countArithmetic = 10;	// Default to 10
+	// Get number of arithmetic instructions used
 	const size_t ArithmeticPosition = SourceCode.find("arithmetic");
-	if (ArithmeticPosition > 2 && ArithmeticPosition < SourceCode.size())
+	int ArithmeticCount = ArithmeticPosition > 2 && ArithmeticPosition < SourceCode.size() ? atoi(&SourceCode[ArithmeticPosition - 2]) : 0;
+	if (ArithmeticCount == 0)
 	{
-		countArithmetic = atoi(&SourceCode[ArithmeticPosition - 2]);
-		if (countArithmetic == 0)
-		{
-			countArithmetic = 10;	// Default to 10
-		}
+		ArithmeticCount = 10; // Default to 10
 	}
 
 	// Remove lines when "    // ps.1.1" string is found and the next line does not start with a space
-	SourceCode = std::regex_replace(SourceCode, std::regex("    \\/\\/ ps\\.1\\.[1-4]\\n((?! ).+\\n)+"), "");
-
+	SourceCode = std::regex_replace(SourceCode,
+		std::regex("    \\/\\/ ps\\.1\\.[1-4]\\n((?! ).+\\n)+"),
+		"");
 	// Fix '-' modifier for constant values when using 'add' arithmetic by changing it to use 'sub'
-	SourceCode = std::regex_replace(SourceCode, std::regex("(add)([_satxd248]*) (r[0-9][\\.wxyz]*), ((1-|)[crtv][0-9][\\.wxyz_abdis2]*), (-)(c[0-9][\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]|)(?![_\\.wxyz])"),
+	SourceCode = std::regex_replace(SourceCode,
+		std::regex("(add)([_satxd248]*) (r[0-9][\\.wxyz]*), ((1-|)[crtv][0-9][\\.wxyz_abdis2]*), (-)(c[0-9][\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]|)(?![_\\.wxyz])"),
 		"sub$2 $3, $4, $7$8 /* changed 'add' to 'sub' removed modifier $6 */");
-	// Fix modifiers for constant values by using any remaning arithmetic places to add a 'mov' arithmetic to move the constant value to a temporary register
-	for (int x = 8 - countArithmetic; x > 0; x--)
+	// Fix modifiers for constant values by using any remaining arithmetic places to add an instruction to move the constant value to a temporary register
+	for (int x = 8 - ArithmeticCount; x > 0; x--)
 	{
 		const size_t beforeReplace = SourceCode.size();
 		// Only replace one match
-		SourceCode = std::regex_replace(SourceCode, std::regex("(...)(_[_satxd248]*|) (r[0-9][\\.wxyz]*), (1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?(1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?(1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?((1?-)(c[0-9])([\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]|)|(1?-?)(c[0-9])([\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]))(?![_\\.wxyz])"),
+		SourceCode = std::regex_replace(SourceCode,
+			std::regex("(...)(_[_satxd248]*|) (r[0-9][\\.wxyz]*), (1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?(1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?(1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?((1?-)(c[0-9])([\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]|)|(1?-?)(c[0-9])([\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]))(?![_\\.wxyz])"),
 			"mov $3, $9$10$13$14 /* added line */\n    $1$2 $3, $4$5$8$12$3$10$11$14$15 /* changed $9$13 to $3 */", std::regex_constants::format_first_only);
 		// Check if string was replaced
 		if (SourceCode.size() - beforeReplace == 0)
@@ -1680,15 +1679,21 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 		}
 	}
 	// Change '-' modifier for constant values when using 'mad' arithmetic by changing it to use 'sub'
-	SourceCode = std::regex_replace(SourceCode, std::regex("(mad)([_satxd248]*) (r[0-9][\\.wxyz]*), (1?-?[crtv][0-9][\\.wxyz_abdis2]*), (1?-?[crtv][0-9][\\.wxyz_abdis2]*), (-)(c[0-9][\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]|)(?![_\\.wxyz])"),
+	SourceCode = std::regex_replace(SourceCode,
+		std::regex("(mad)([_satxd248]*) (r[0-9][\\.wxyz]*), (1?-?[crtv][0-9][\\.wxyz_abdis2]*), (1?-?[crtv][0-9][\\.wxyz_abdis2]*), (-)(c[0-9][\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]|)(?![_\\.wxyz])"),
 		"sub$2 $3, $4, $7$8 /* changed 'mad' to 'sub' removed $5 removed modifier $6 */");
 	// Change '_bx2' modifier for constant values to use _x2 modifier
-	SourceCode = std::regex_replace(SourceCode, std::regex("(...)(_sat|) (r[0-9][\\.wxyz]*), ([crtv][0-9][\\.wxyz]*)_bx2, (c[0-9][\\.wxyz]*)_bx2(?!,)"),
+	SourceCode = std::regex_replace(SourceCode,
+		std::regex("(...)(_sat|) (r[0-9][\\.wxyz]*), ([crtv][0-9][\\.wxyz]*)_bx2, (c[0-9][\\.wxyz]*)_bx2(?!,)"),
 		"$1_x2$2 $3, $4, $5 /* removed modifiers _bx2 added modifier _x2 */");
 	// Remove trailing modifiers for constant values
-	SourceCode = std::regex_replace(SourceCode, std::regex("(c[0-9][\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa])"), "$1 /* removed modifier $2 */");
+	SourceCode = std::regex_replace(SourceCode,
+		std::regex("(c[0-9][\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa])"),
+		"$1 /* removed modifier $2 */");
 	// Remove remaining modifiers for constant values
-	SourceCode = std::regex_replace(SourceCode, std::regex("(1?-)(c[0-9][\\.wxyz]*(?![\\.wxyz]))"), "$2 /* removed modifier $1 */");
+	SourceCode = std::regex_replace(SourceCode,
+		std::regex("(1?-)(c[0-9][\\.wxyz]*(?![\\.wxyz]))"),
+		"$2 /* removed modifier $1 */");
 
 #ifndef D3D8TO9NOLOG
 	LOG << "> Dumping translated shader assembly:" << std::endl << std::endl << SourceCode << std::endl;
