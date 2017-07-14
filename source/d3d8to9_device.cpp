@@ -869,7 +869,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetTexture(DWORD Stage, Direct3DBaseT
 				break;
 			case D3DRTYPE_VOLUMETEXTURE:
 				BaseTextureInterface->QueryInterface(IID_PPV_ARGS(&VolumeTextureInterface));
-				*ppTexture = ProxyAddressLookupTable->FindAddress(TextureInterface);
+				*ppTexture = ProxyAddressLookupTable->FindAddress(VolumeTextureInterface);
 				if (*ppTexture == nullptr)
 				{
 					*ppTexture = new Direct3DVolumeTexture8(this, VolumeTextureInterface);
@@ -877,7 +877,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetTexture(DWORD Stage, Direct3DBaseT
 				break;
 			case D3DRTYPE_CUBETEXTURE:
 				BaseTextureInterface->QueryInterface(IID_PPV_ARGS(&CubeTextureInterface));
-				*ppTexture = ProxyAddressLookupTable->FindAddress(TextureInterface);
+				*ppTexture = ProxyAddressLookupTable->FindAddress(CubeTextureInterface);
 				if (*ppTexture == nullptr)
 				{
 					*ppTexture = new Direct3DCubeTexture8(this, CubeTextureInterface);
