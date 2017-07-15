@@ -18,6 +18,36 @@ static const D3DFORMAT AdapterFormats[] = {
 Direct3D8::Direct3D8(IDirect3D9 *ProxyInterface) :
 	ProxyInterface(ProxyInterface)
 {
+	D3DDISPLAYMODE pMode;
+
+	CurrentAdapterCount = ProxyInterface->GetAdapterCount();
+
+	if (CurrentAdapterCount > MaxAdapters)
+	{
+		CurrentAdapterCount = MaxAdapters;
+	}
+
+	for (UINT Adapter = 0; Adapter < CurrentAdapterCount; Adapter++)
+	{
+		for (D3DFORMAT Format : AdapterFormats)
+		{
+			const UINT ModeCount = ProxyInterface->GetAdapterModeCount(Adapter, Format);
+
+			for (UINT Mode = 0; Mode < ModeCount; Mode++)
+			{
+				ProxyInterface->EnumAdapterModes(Adapter, Format, Mode, &pMode);
+				CurrentAdapterModes[Adapter].push_back(pMode);
+				CurrentAdapterModeCount[Adapter]++;
+			}
+		}
+	}
+}
+Direct3D8::~Direct3D8()
+{
+	for (UINT x = 0; x < CurrentAdapterCount; x++)
+	{
+		CurrentAdapterModes[x].clear();
+	}
 }
 
 HRESULT STDMETHODCALLTYPE Direct3D8::QueryInterface(REFIID riid, void **ppvObj)
@@ -61,7 +91,7 @@ HRESULT STDMETHODCALLTYPE Direct3D8::RegisterSoftwareDevice(void *pInitializeFun
 }
 UINT STDMETHODCALLTYPE Direct3D8::GetAdapterCount()
 {
-	return ProxyInterface->GetAdapterCount();
+	return CurrentAdapterCount;
 }
 HRESULT STDMETHODCALLTYPE Direct3D8::GetAdapterIdentifier(UINT Adapter, DWORD Flags, D3DADAPTER_IDENTIFIER8 *pIdentifier)
 {
@@ -94,42 +124,21 @@ HRESULT STDMETHODCALLTYPE Direct3D8::GetAdapterIdentifier(UINT Adapter, DWORD Fl
 }
 UINT STDMETHODCALLTYPE Direct3D8::GetAdapterModeCount(UINT Adapter)
 {
-	UINT ModeCount = 0;
-
-	for (D3DFORMAT Format : AdapterFormats)
-	{
-		ModeCount += ProxyInterface->GetAdapterModeCount(Adapter, Format);
-	}
-
-	return ModeCount;
+	return CurrentAdapterModeCount[Adapter];
 }
 HRESULT STDMETHODCALLTYPE Direct3D8::EnumAdapterModes(UINT Adapter, UINT Mode, D3DDISPLAYMODE *pMode)
 {
-	if (pMode == nullptr)
+	if (pMode == nullptr || !(Adapter < CurrentAdapterCount && Mode < CurrentAdapterModeCount[Adapter]))
 	{
 		return D3DERR_INVALIDCALL;
 	}
 
-	UINT ModeOffset = 0;
+	pMode->Format = CurrentAdapterModes[Adapter].at(Mode).Format;
+	pMode->Height = CurrentAdapterModes[Adapter].at(Mode).Height;
+	pMode->RefreshRate = CurrentAdapterModes[Adapter].at(Mode).RefreshRate;
+	pMode->Width = CurrentAdapterModes[Adapter].at(Mode).Width;
 
-	for (D3DFORMAT Format : AdapterFormats)
-	{
-		const UINT ModeCount = ProxyInterface->GetAdapterModeCount(Adapter, Format);
-
-		if (ModeCount == 0)
-		{
-			continue;
-		}
-
-		if (Mode < ModeOffset + ModeCount)
-		{
-			return ProxyInterface->EnumAdapterModes(Adapter, Format, Mode - ModeOffset, pMode);
-		}
-
-		ModeOffset += ModeCount;
-	}
-
-	return D3DERR_INVALIDCALL;
+	return D3D_OK;
 }
 HRESULT STDMETHODCALLTYPE Direct3D8::GetAdapterDisplayMode(UINT Adapter, D3DDISPLAYMODE *pMode)
 {
@@ -200,39 +209,7 @@ HRESULT STDMETHODCALLTYPE Direct3D8::CreateDevice(UINT Adapter, D3DDEVTYPE Devic
 		return hr;
 	}
 
-	Direct3DDevice8 *const DeviceProxyObject = new Direct3DDevice8(this, DeviceInterface, (PresentParams.Flags & D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL) != 0);
-
-	// Set default render target
-	IDirect3DSurface9 *RenderTargetInterface = nullptr;
-	IDirect3DSurface9 *DepthStencilInterface = nullptr;
-
-	DeviceInterface->GetRenderTarget(0, &RenderTargetInterface);
-	DeviceInterface->GetDepthStencilSurface(&DepthStencilInterface);
-
-	Direct3DSurface8 *RenderTargetProxyObject = nullptr;
-	Direct3DSurface8 *DepthStencilProxyObject = nullptr;
-
-	if (RenderTargetInterface != nullptr)
-	{
-		RenderTargetProxyObject = new Direct3DSurface8(DeviceProxyObject, RenderTargetInterface);
-	}
-	if (DepthStencilInterface != nullptr)
-	{
-		DepthStencilProxyObject = new Direct3DSurface8(DeviceProxyObject, DepthStencilInterface);
-	}
-
-	DeviceProxyObject->SetRenderTarget(RenderTargetProxyObject, DepthStencilProxyObject);
-
-	if (RenderTargetProxyObject != nullptr)
-	{
-		RenderTargetProxyObject->Release();
-	}
-	if (DepthStencilProxyObject != nullptr)
-	{
-		DepthStencilProxyObject->Release();
-	}
-
-	*ppReturnedDeviceInterface = DeviceProxyObject;
+	*ppReturnedDeviceInterface = new Direct3DDevice8(this, DeviceInterface, (PresentParams.Flags & D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL) != 0);
 
 	return D3D_OK;
 }

@@ -19,9 +19,11 @@ Direct3DDevice8::Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterfac
 	D3D(d3d), ProxyInterface(ProxyInterface), ZBufferDiscarding(EnableZBufferDiscarding)
 {
 	D3D->AddRef();
+	ProxyAddressLookupTable = new AddressLookupTable(this);
 }
 Direct3DDevice8::~Direct3DDevice8()
 {
+	delete ProxyAddressLookupTable;
 	ProxyInterface->Release();
 	D3D->Release();
 }
@@ -47,38 +49,11 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::QueryInterface(REFIID riid, void **pp
 }
 ULONG STDMETHODCALLTYPE Direct3DDevice8::AddRef()
 {
-	return InterlockedIncrement(&RefCount);
+	return ProxyInterface->AddRef();
 }
 ULONG STDMETHODCALLTYPE Direct3DDevice8::Release()
 {
-	ULONG LastRefCount = InterlockedExchange(&RefCount, RefCount);
-	
-	Direct3DSurface8 *const RenderTarget = CurrentRenderTarget;
-	Direct3DSurface8 *const DepthStencil = CurrentDepthStencilSurface;
-
-	if (RenderTarget != nullptr &&
-		DepthStencil != nullptr &&
-		LastRefCount == 3)
-	{
-		CurrentRenderTarget = nullptr;
-		CurrentDepthStencilSurface = nullptr;
-		RenderTarget->Release();
-		DepthStencil->Release();
-	}
-	else if (RenderTarget != nullptr &&
-		LastRefCount == 2)
-	{
-		CurrentRenderTarget = nullptr;
-		RenderTarget->Release();
-	}
-	else if (DepthStencil != nullptr &&
-		LastRefCount == 2)
-	{
-		CurrentDepthStencilSurface = nullptr;
-		DepthStencil->Release();
-	}
-
-	LastRefCount = InterlockedDecrement(&RefCount);
+	ULONG LastRefCount = ProxyInterface->Release();
 
 	if (LastRefCount == 0)
 	{
@@ -203,50 +178,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::Reset(D3DPRESENT_PARAMETERS8 *pPresen
 	D3DPRESENT_PARAMETERS PresentParams;
 	ConvertPresentParameters(*pPresentationParameters, PresentParams);
 
-	if (CurrentRenderTarget != nullptr)
-	{
-		CurrentRenderTarget->Release();
-		CurrentRenderTarget = nullptr;
-	}
-	if (CurrentDepthStencilSurface != nullptr)
-	{
-		CurrentDepthStencilSurface->Release();
-		CurrentDepthStencilSurface = nullptr;
-	}
-
-	const HRESULT hr = ProxyInterface->Reset(&PresentParams);
-
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	// Set default render target
-	IDirect3DSurface9 *RenderTargetInterface = nullptr;
-	IDirect3DSurface9 *DepthStencilInterface = nullptr;
-
-	ProxyInterface->GetRenderTarget(0, &RenderTargetInterface);
-	ProxyInterface->GetDepthStencilSurface(&DepthStencilInterface);
-
-	Direct3DSurface8 *RenderTargetProxyObject = nullptr;
-	Direct3DSurface8 *DepthStencilProxyObject = nullptr;
-
-	if (RenderTargetInterface != nullptr)
-	{
-		RenderTargetProxyObject = new Direct3DSurface8(this, RenderTargetInterface);
-
-		RenderTargetInterface->Release();
-	}
-	if (DepthStencilInterface != nullptr)
-	{
-		DepthStencilProxyObject = new Direct3DSurface8(this, DepthStencilInterface);
-
-		DepthStencilInterface->Release();
-	}
-
-	SetRenderTarget(RenderTargetProxyObject, DepthStencilProxyObject);
-
-	return D3D_OK;
+	return ProxyInterface->Reset(&PresentParams);
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
 {
@@ -272,7 +204,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetBackBuffer(UINT iBackBuffer, D3DBA
 		return hr;
 	}
 
-	*ppBackBuffer = new Direct3DSurface8(this, SurfaceInterface);
+	*ppBackBuffer = ProxyAddressLookupTable->FindAddress<Direct3DSurface8>(SurfaceInterface);
 
 	return D3D_OK;
 }
@@ -653,14 +585,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderTarget(Direct3DSurface8 *pRe
 		{
 			return hr;
 		}
-
-		if (CurrentRenderTarget != nullptr)
-		{
-			CurrentRenderTarget->Release();
-		}
-
-		CurrentRenderTarget = pRenderTarget;
-		CurrentRenderTarget->AddRef();
 	}
 
 	if (pNewZStencil != nullptr)
@@ -671,25 +595,10 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderTarget(Direct3DSurface8 *pRe
 		{
 			return hr;
 		}
-
-		if (CurrentDepthStencilSurface != nullptr)
-		{
-			CurrentDepthStencilSurface->Release();
-		}
-
-		CurrentDepthStencilSurface = pNewZStencil;
-		CurrentDepthStencilSurface->AddRef();
 	}
 	else
 	{
 		ProxyInterface->SetDepthStencilSurface(nullptr);
-
-		if (CurrentDepthStencilSurface != nullptr)
-		{
-			CurrentDepthStencilSurface->Release();
-		}
-
-		CurrentDepthStencilSurface = nullptr;
 	}
 
 	return D3D_OK;
@@ -701,12 +610,16 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetRenderTarget(Direct3DSurface8 **pp
 		return D3DERR_INVALIDCALL;
 	}
 
-	if (CurrentRenderTarget != nullptr)
+	IDirect3DSurface9 *SurfaceInterface = nullptr;
+
+	const HRESULT hr = ProxyInterface->GetRenderTarget(0, &SurfaceInterface);
+
+	if (FAILED(hr))
 	{
-		CurrentRenderTarget->AddRef();
+		return hr;
 	}
 
-	*ppRenderTarget = CurrentRenderTarget;
+	*ppRenderTarget = ProxyAddressLookupTable->FindAddress<Direct3DSurface8>(SurfaceInterface);
 
 	return D3D_OK;
 }
@@ -717,12 +630,16 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetDepthStencilSurface(Direct3DSurfac
 		return D3DERR_INVALIDCALL;
 	}
 
-	if (CurrentDepthStencilSurface != nullptr)
+	IDirect3DSurface9 *SurfaceInterface = nullptr;
+
+	const HRESULT hr = ProxyInterface->GetDepthStencilSurface(&SurfaceInterface);
+
+	if (FAILED(hr))
 	{
-		CurrentDepthStencilSurface->AddRef();
+		return hr;
 	}
 
-	*ppZStencilSurface = CurrentDepthStencilSurface;
+	*ppZStencilSurface = ProxyAddressLookupTable->FindAddress<Direct3DSurface8>(SurfaceInterface);
 
 	return D3D_OK;
 }
@@ -932,15 +849,15 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetTexture(DWORD Stage, Direct3DBaseT
 		{
 			case D3DRTYPE_TEXTURE:
 				BaseTextureInterface->QueryInterface(IID_PPV_ARGS(&TextureInterface));
-				*ppTexture = new Direct3DTexture8(this, TextureInterface);
+				*ppTexture = ProxyAddressLookupTable->FindAddress<Direct3DTexture8>(TextureInterface);
 				break;
 			case D3DRTYPE_VOLUMETEXTURE:
 				BaseTextureInterface->QueryInterface(IID_PPV_ARGS(&VolumeTextureInterface));
-				*ppTexture = new Direct3DVolumeTexture8(this, VolumeTextureInterface);
+				*ppTexture = ProxyAddressLookupTable->FindAddress<Direct3DVolumeTexture8>(VolumeTextureInterface);
 				break;
 			case D3DRTYPE_CUBETEXTURE:
 				BaseTextureInterface->QueryInterface(IID_PPV_ARGS(&CubeTextureInterface));
-				*ppTexture = new Direct3DCubeTexture8(this, CubeTextureInterface);
+				*ppTexture = ProxyAddressLookupTable->FindAddress<Direct3DCubeTexture8>(CubeTextureInterface);
 				break;
 			default:
 				BaseTextureInterface->Release();
@@ -1052,6 +969,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetInfo(DWORD DevInfoID, void *pDevIn
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetPaletteEntries(UINT PaletteNumber, const PALETTEENTRY *pEntries)
 {
+	PaletteNumber = (PaletteNumber & 0xFFF) | (PC_NOCOLLAPSE << 12);
 	return ProxyInterface->SetPaletteEntries(PaletteNumber, pEntries);
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetPaletteEntries(UINT PaletteNumber, PALETTEENTRY *pEntries)
@@ -1060,6 +978,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetPaletteEntries(UINT PaletteNumber,
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetCurrentTexturePalette(UINT PaletteNumber)
 {
+	PaletteNumber = (PaletteNumber & 0xFFF) | (PC_NOCOLLAPSE << 12);
 	return ProxyInterface->SetCurrentTexturePalette(PaletteNumber);
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetCurrentTexturePalette(UINT *pPaletteNumber)
@@ -1388,7 +1307,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 		SourceCode = std::regex_replace(SourceCode, std::regex("(oFog|oPts)\\.x"), "$1 /* removed swizzle */");
 		SourceCode = std::regex_replace(SourceCode, std::regex("(add|sub|mul|min|max) (oFog|oPts), ([cr][0-9]+), (.+)\\n"), "$1 $2, $3.x /* added swizzle */, $4\n");
 		SourceCode = std::regex_replace(SourceCode, std::regex("(add|sub|mul|min|max) (oFog|oPts), (.+), ([cr][0-9]+)\\n"), "$1 $2, $3, $4.x /* added swizzle */\n");
-		SourceCode = std::regex_replace(SourceCode, std::regex("mov (oFog|oPts)(.*), (-?)([crv][0-9]+)(?!\\.)"), "mov $1$2, $3$4.x /* select single component */");
+		SourceCode = std::regex_replace(SourceCode, std::regex("mov (oFog|oPts)(.*), (-?)([crv][0-9]+(?![\\.0-9]))"), "mov $1$2, $3$4.x /* select single component */");
 
 #ifndef D3D8TO9NOLOG
 		LOG << "> Dumping translated shader assembly:" << std::endl << std::endl << SourceCode << std::endl;
@@ -1625,7 +1544,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetStreamSource(UINT StreamNumber, Di
 
 	if (VertexBufferInterface != nullptr)
 	{
-		*ppStreamData = new Direct3DVertexBuffer8(this, VertexBufferInterface);
+		*ppStreamData = ProxyAddressLookupTable->FindAddress<Direct3DVertexBuffer8>(VertexBufferInterface);
 	}
 
 	return D3D_OK;
@@ -1666,7 +1585,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetIndices(Direct3DIndexBuffer8 **ppI
 
 	if (IntexBufferInterface != nullptr)
 	{
-		*ppIndexData = new Direct3DIndexBuffer8(this, IntexBufferInterface);
+		*ppIndexData = ProxyAddressLookupTable->FindAddress<Direct3DIndexBuffer8>(IntexBufferInterface);
 	}
 
 	return D3D_OK;
@@ -1729,9 +1648,52 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 		SourceCode.replace(VersionPosition, 6, "ps_1_1");
 	}
 
-	SourceCode = std::regex_replace(SourceCode, std::regex("    \\/\\/ ps\\.1\\.[1-4]\\n((?! ).+\\n)+"), "");
-	SourceCode = std::regex_replace(SourceCode, std::regex("(1?-)(c[0-9]+)"), "$2 /* removed modifier $1 */");
-	SourceCode = std::regex_replace(SourceCode, std::regex("(c[0-9]+)(_bx2|_bias)"), "$1 /* removed modifier $2 */");
+	// Get number of arithmetic instructions used
+	const size_t ArithmeticPosition = SourceCode.find("arithmetic");
+	int ArithmeticCount = ArithmeticPosition > 2 && ArithmeticPosition < SourceCode.size() ? atoi(&SourceCode[ArithmeticPosition - 2]) : 0;
+	if (ArithmeticCount == 0)
+	{
+		ArithmeticCount = 10; // Default to 10
+	}
+
+	// Remove lines when "    // ps.1.1" string is found and the next line does not start with a space
+	SourceCode = std::regex_replace(SourceCode,
+		std::regex("    \\/\\/ ps\\.1\\.[1-4]\\n((?! ).+\\n)+"),
+		"");
+	// Fix '-' modifier for constant values when using 'add' arithmetic by changing it to use 'sub'
+	SourceCode = std::regex_replace(SourceCode,
+		std::regex("(add)([_satxd248]*) (r[0-9][\\.wxyz]*), ((1-|)[crtv][0-9][\\.wxyz_abdis2]*), (-)(c[0-9][\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]|)(?![_\\.wxyz])"),
+		"sub$2 $3, $4, $7$8 /* changed 'add' to 'sub' removed modifier $6 */");
+	// Fix modifiers for constant values by using any remaining arithmetic places to add an instruction to move the constant value to a temporary register
+	for (int x = 8 - ArithmeticCount; x > 0; x--)
+	{
+		const size_t beforeReplace = SourceCode.size();
+		// Only replace one match
+		SourceCode = std::regex_replace(SourceCode,
+			std::regex("(...)(_[_satxd248]*|) (r[0-9][\\.wxyz]*), (1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?(1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?(1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?((1?-)(c[0-9])([\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]|)|(1?-?)(c[0-9])([\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]))(?![_\\.wxyz])"),
+			"mov $3, $9$10$13$14 /* added line */\n    $1$2 $3, $4$5$8$12$3$10$11$14$15 /* changed $9$13 to $3 */", std::regex_constants::format_first_only);
+		// Check if string was replaced
+		if (SourceCode.size() - beforeReplace == 0)
+		{
+			break;
+		}
+	}
+	// Change '-' modifier for constant values when using 'mad' arithmetic by changing it to use 'sub'
+	SourceCode = std::regex_replace(SourceCode,
+		std::regex("(mad)([_satxd248]*) (r[0-9][\\.wxyz]*), (1?-?[crtv][0-9][\\.wxyz_abdis2]*), (1?-?[crtv][0-9][\\.wxyz_abdis2]*), (-)(c[0-9][\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]|)(?![_\\.wxyz])"),
+		"sub$2 $3, $4, $7$8 /* changed 'mad' to 'sub' removed $5 removed modifier $6 */");
+	// Change '_bx2' modifier for constant values to use _x2 modifier
+	SourceCode = std::regex_replace(SourceCode,
+		std::regex("(...)(_sat|) (r[0-9][\\.wxyz]*), ([crtv][0-9][\\.wxyz]*)_bx2, (c[0-9][\\.wxyz]*)_bx2(?!,)"),
+		"$1_x2$2 $3, $4, $5 /* removed modifiers _bx2 added modifier _x2 */");
+	// Remove trailing modifiers for constant values
+	SourceCode = std::regex_replace(SourceCode,
+		std::regex("(c[0-9][\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa])"),
+		"$1 /* removed modifier $2 */");
+	// Remove remaining modifiers for constant values
+	SourceCode = std::regex_replace(SourceCode,
+		std::regex("(1?-)(c[0-9][\\.wxyz]*(?![\\.wxyz]))"),
+		"$2 /* removed modifier $1 */");
 
 #ifndef D3D8TO9NOLOG
 	LOG << "> Dumping translated shader assembly:" << std::endl << std::endl << SourceCode << std::endl;

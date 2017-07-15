@@ -1,6 +1,8 @@
 d3d8to9
 =======
 
+[![Build Status](https://ci.appveyor.com/api/projects/status/aqupdda60ixgenyd?svg=true)](https://ci.appveyor.com/project/crosire/d3d8to9)
+
 d3d8to9 is a pseudo-driver module that intends to improve compatibility and stability in games using Direct3D 8 for rendering by converting all API calls and lowlevel shaders to equivalent Direct3D 9 ones. By that it also opens those games to the new possibilities from proven tools and wrappers written for Direct3D 9.
 
 ## Contributing

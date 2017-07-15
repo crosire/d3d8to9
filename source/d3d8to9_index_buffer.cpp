@@ -10,11 +10,19 @@ Direct3DIndexBuffer8::Direct3DIndexBuffer8(Direct3DDevice8 *Device, IDirect3DInd
 	Device(Device), ProxyInterface(ProxyInterface)
 {
 	Device->AddRef();
+	Device->ProxyAddressLookupTable->SaveAddress(this, ProxyInterface);
 }
 Direct3DIndexBuffer8::~Direct3DIndexBuffer8()
 {
-	ProxyInterface->Release();
-	Device->Release();
+	if (CleanUpFlag)
+	{
+		Device->ProxyAddressLookupTable->DeleteAddress(this);
+		if (Active)
+		{
+			Active = false;
+			Device->Release();
+		}
+	}
 }
 
 HRESULT STDMETHODCALLTYPE Direct3DIndexBuffer8::QueryInterface(REFIID riid, void **ppvObj)
@@ -39,15 +47,20 @@ HRESULT STDMETHODCALLTYPE Direct3DIndexBuffer8::QueryInterface(REFIID riid, void
 }
 ULONG STDMETHODCALLTYPE Direct3DIndexBuffer8::AddRef()
 {
-	return InterlockedIncrement(&RefCount);
+	return ProxyInterface->AddRef();
 }
 ULONG STDMETHODCALLTYPE Direct3DIndexBuffer8::Release()
 {
-	const ULONG LastRefCount = InterlockedDecrement(&RefCount);
+	const ULONG LastRefCount = ProxyInterface->Release();
 
 	if (LastRefCount == 0)
 	{
-		delete this;
+		if (Active)
+		{
+			Active = false;
+			Device->Release();
+		}
+		//delete this;
 	}
 
 	return LastRefCount;
@@ -97,6 +110,17 @@ D3DRESOURCETYPE STDMETHODCALLTYPE Direct3DIndexBuffer8::GetType()
 
 HRESULT STDMETHODCALLTYPE Direct3DIndexBuffer8::Lock(UINT OffsetToLock, UINT SizeToLock, BYTE **ppbData, DWORD Flags)
 {
+	if ((Flags & D3DLOCK_DISCARD) != 0)
+	{
+		D3DINDEXBUFFER_DESC desc;
+		ProxyInterface->GetDesc(&desc);
+
+		if ((desc.Usage & D3DUSAGE_DYNAMIC) == 0 || (desc.Usage & D3DUSAGE_WRITEONLY) == 0)
+		{
+			Flags ^= D3DLOCK_DISCARD;
+		}
+	}
+
 	return ProxyInterface->Lock(OffsetToLock, SizeToLock, reinterpret_cast<void **>(ppbData), Flags);
 }
 HRESULT STDMETHODCALLTYPE Direct3DIndexBuffer8::Unlock()
