@@ -178,6 +178,7 @@ private:
 	INT CurrentBaseVertexIndex = 0;
 	const BOOL ZBufferDiscarding = FALSE;
 	DWORD CurrentVertexShaderHandle = 0, CurrentPixelShaderHandle = 0;
+	bool PaletteFlag = false;
 };
 
 class Direct3DSwapChain8 : public IUnknown, public AddressLookupTableObject
