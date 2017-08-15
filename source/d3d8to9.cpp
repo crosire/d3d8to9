@@ -18,7 +18,10 @@ std::ofstream LOG;
 extern "C" Direct3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
 {
 #ifndef D3D8TO9NOLOG
-	LOG.open("d3d8.log", std::ios::trunc);
+	if (!LOG.is_open())
+	{
+		LOG.open("d3d8.log", std::ios::trunc);
+	}
 
 	if (!LOG.is_open())
 	{
