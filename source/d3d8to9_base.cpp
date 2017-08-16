@@ -206,7 +206,7 @@ HRESULT STDMETHODCALLTYPE Direct3D8::CreateDevice(UINT Adapter, D3DDEVTYPE Devic
 
 	HRESULT hr = ProxyInterface->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &PresentParams, &DeviceInterface);
 
-	if ((hr & D3DERR_DEVICELOST) == D3DERR_DEVICELOST && pCurrentDeviceInterface && pCurrentPresentParams)
+	if (hr == D3DERR_DEVICELOST && pCurrentDeviceInterface && pCurrentPresentParams)
 	{
 		pCurrentDeviceInterface->Reset(pCurrentPresentParams);
 		hr = ProxyInterface->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &PresentParams, &DeviceInterface);
