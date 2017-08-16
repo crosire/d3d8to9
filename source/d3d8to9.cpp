@@ -18,13 +18,16 @@ std::ofstream LOG;
 extern "C" Direct3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
 {
 #ifndef D3D8TO9NOLOG
+	static bool LogMessageFlag = true;
+
 	if (!LOG.is_open())
 	{
 		LOG.open("d3d8.log", std::ios::trunc);
 	}
 
-	if (!LOG.is_open())
+	if (!LOG.is_open() && LogMessageFlag)
 	{
+		LogMessageFlag = false;
 		MessageBox(nullptr, TEXT("Failed to open debug log file \"d3d8.log\"!"), nullptr, MB_ICONWARNING);
 	}
 
@@ -65,7 +68,6 @@ extern "C" Direct3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
 				return nullptr;
 			}
 		}
-
 	}
 
 	return new Direct3D8(d3d);
