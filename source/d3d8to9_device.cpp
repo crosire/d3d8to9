@@ -1293,9 +1293,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 		const size_t InstructionPosition = SourceCode.find("instruction");
 		int InstructionCount = InstructionPosition > 2 && InstructionPosition < SourceCode.size() ? atoi(&SourceCode[InstructionPosition - 4]) : 0;
 
-		for (size_t j = 0; j < 2; j++)
+		for (size_t j = 0; j < 8; j++)
 		{
-			const std::string reg = "oD" + std::to_string(j);
+			const std::string reg = "oT" + std::to_string(j);
 
 			if (SourceCode.find(reg) != std::string::npos && InstructionCount < 128)
 			{
@@ -1303,9 +1303,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 				SourceCode.insert(DeclPosition + ConstantsCode.size(), "    mov " + reg + ", c0 /* initialize output register " + reg + " */\n");
 			}
 		}
-		for (size_t j = 0; j < 8; j++)
+		for (size_t j = 0; j < 2; j++)
 		{
-			const std::string reg = "oT" + std::to_string(j);
+			const std::string reg = "oD" + std::to_string(j);
 
 			if (SourceCode.find(reg) != std::string::npos && InstructionCount < 128)
 			{
