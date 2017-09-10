@@ -18,15 +18,12 @@ struct VertexShaderInfo
 Direct3DDevice8::Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterface, BOOL EnableZBufferDiscarding) :
 	D3D(d3d), ProxyInterface(ProxyInterface), ZBufferDiscarding(EnableZBufferDiscarding)
 {
-	D3D->AddRef();
 	ProxyAddressLookupTable = new AddressLookupTable(this);
 	PaletteFlag = SupportsPalettes();
 }
 Direct3DDevice8::~Direct3DDevice8()
 {
 	delete ProxyAddressLookupTable;
-	ProxyInterface->Release();
-	D3D->Release();
 }
 
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::QueryInterface(REFIID riid, void **ppvObj)
@@ -861,11 +858,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetTexture(DWORD Stage, Direct3DBaseT
 				*ppTexture = ProxyAddressLookupTable->FindAddress<Direct3DCubeTexture8>(CubeTextureInterface);
 				break;
 			default:
-				BaseTextureInterface->Release();
 				return D3DERR_INVALIDCALL;
 		}
-
-		BaseTextureInterface->Release();
 	}
 
 	return D3D_OK;

@@ -19,7 +19,7 @@ AddressLookupTable::~AddressLookupTable()
 		{
 			assert(AddressCache[i].back().Address8 != nullptr);
 
-			AddressCache[i].back().Address8->DeleteMe(false);
+			AddressCache[i].back().Address8->DeleteMe();
 
 			AddressCache[i].pop_back();
 		}
