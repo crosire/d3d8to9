@@ -6,6 +6,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <algorithm>
 
 class AddressLookupTable
 {
@@ -79,13 +80,13 @@ public:
 		}
 
 		constexpr UINT CacheIndex = AddressCacheIndex<T>::CacheIndex;
-		for (auto it = AddressCache[CacheIndex].begin(); it != AddressCache[CacheIndex].end(); ++it)
+
+		auto it = std::find_if(AddressCache[CacheIndex].begin(), AddressCache[CacheIndex].end(),
+			[pAddress8](std::pair<void*, class AddressLookupTableObject*> Map) -> bool { return Map.second == pAddress8; });
+
+		if (it != std::end(AddressCache[CacheIndex]))
 		{
-			if (it->second == pAddress8)
-			{
-				it = AddressCache[CacheIndex].erase(it);
-				return;
-			}
+			it = AddressCache[CacheIndex].erase(it);
 		}
 	}
 
