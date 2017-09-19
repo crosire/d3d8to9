@@ -50,9 +50,14 @@ public:
 			return nullptr;
 		}
 
-		T *pAddress8 = static_cast<T *>(AddressCache[AddressCacheIndex<T>::CacheIndex][pAddress9]);
+		T *pAddress8 = nullptr;
+		auto it = AddressCache[AddressCacheIndex<T>::CacheIndex].find(pAddress9);
 
-		if (pAddress8 == nullptr)
+		if (it != std::end(AddressCache[AddressCacheIndex<T>::CacheIndex]))
+		{
+			pAddress8 = static_cast<T *>(it->second);
+		}
+		else
 		{
 			pAddress8 = new T(Device, static_cast<AddressCacheIndex<T>::Type9 *>(pAddress9));
 		}
