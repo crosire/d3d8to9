@@ -50,19 +50,14 @@ public:
 			return nullptr;
 		}
 
-		T *pAddress8 = nullptr;
 		auto it = AddressCache[AddressCacheIndex<T>::CacheIndex].find(pAddress9);
 
 		if (it != std::end(AddressCache[AddressCacheIndex<T>::CacheIndex]))
 		{
-			pAddress8 = static_cast<T *>(it->second);
-		}
-		else
-		{
-			pAddress8 = new T(Device, static_cast<AddressCacheIndex<T>::Type9 *>(pAddress9));
+			return static_cast<T *>(it->second);
 		}
 
-		return pAddress8;
+		return new T(Device, static_cast<AddressCacheIndex<T>::Type9 *>(pAddress9));
 	}
 
 	template <typename T>
