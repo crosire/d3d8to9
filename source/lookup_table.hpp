@@ -5,17 +5,11 @@
 
 #pragma once
 
-#include <vector>
-#include <iostream>
+#include <unordered_map>
+#include <algorithm>
 
 class AddressLookupTable
 {
-	struct AddressStruct
-	{
-		class AddressLookupTableObject *Address8 = nullptr;
-		void *Address9 = nullptr;
-	};
-
 	template <typename T>
 	struct AddressCacheIndex;
 	template <>
@@ -56,23 +50,14 @@ public:
 			return nullptr;
 		}
 
-		T *pAddress8 = nullptr;
-		constexpr UINT CacheIndex = AddressCacheIndex<T>::CacheIndex;
+		auto it = AddressCache[AddressCacheIndex<T>::CacheIndex].find(pAddress9);
 
-		for (size_t i = 0; i < AddressCache[CacheIndex].size(); i++)
+		if (it != std::end(AddressCache[AddressCacheIndex<T>::CacheIndex]))
 		{
-			if (AddressCache[CacheIndex][i].Address9 == pAddress9)
-			{
-				pAddress8 = static_cast<T *>(AddressCache[CacheIndex][i].Address8);
-			}
+			return static_cast<T *>(it->second);
 		}
 
-		if (pAddress8 == nullptr)
-		{
-			pAddress8 = new T(Device, static_cast<AddressCacheIndex<T>::Type9 *>(pAddress9));
-		}
-
-		return pAddress8;
+		return new T(Device, static_cast<AddressCacheIndex<T>::Type9 *>(pAddress9));
 	}
 
 	template <typename T>
@@ -83,12 +68,9 @@ public:
 			return;
 		}
 
-		AddressStruct CacheData;
-		CacheData.Address8 = pAddress8;
-		CacheData.Address9 = pAddress9;
-
-		AddressCache[AddressCacheIndex<T>::CacheIndex].push_back(std::move(CacheData));
+		AddressCache[AddressCacheIndex<T>::CacheIndex][pAddress9] = pAddress8;
 	}
+
 	template <typename T>
 	void DeleteAddress(T *pAddress8)
 	{
@@ -99,20 +81,18 @@ public:
 
 		constexpr UINT CacheIndex = AddressCacheIndex<T>::CacheIndex;
 
-		for (size_t i = 0; i < AddressCache[CacheIndex].size(); i++)
+		auto it = std::find_if(AddressCache[CacheIndex].begin(), AddressCache[CacheIndex].end(),
+			[pAddress8](std::pair<void*, class AddressLookupTableObject*> Map) -> bool { return Map.second == pAddress8; });
+
+		if (it != std::end(AddressCache[CacheIndex]))
 		{
-			if (AddressCache[CacheIndex][i].Address8 == pAddress8)
-			{
-				std::swap(AddressCache[CacheIndex][i], AddressCache[CacheIndex].back());
-				AddressCache[CacheIndex].pop_back();
-				return;
-			}
+			it = AddressCache[CacheIndex].erase(it);
 		}
 	}
 
 private:
 	Direct3DDevice8 *const Device;
-	std::vector<AddressStruct> AddressCache[8];
+	std::unordered_map<void*, class AddressLookupTableObject*> AddressCache[8];
 };
 
 class AddressLookupTableObject
