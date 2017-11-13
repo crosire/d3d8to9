@@ -1350,7 +1350,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 			{
 				const std::string reg = "(m.x.) (r" + std::to_string(j) + "), ((-?)r" + std::to_string(j) + "([\\.xyzw]*))(?![0-9])";
 
-				while (std::regex_search(SourceCode.c_str(), std::regex(reg)))
+				while (std::regex_search(SourceCode, std::regex(reg)))
 				{
 					// If there is enough remaining instructions and an unused register then update to use a temp register
 					if (r < 12 && InstructionCount < 128)
