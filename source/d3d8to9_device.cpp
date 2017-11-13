@@ -1335,6 +1335,41 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 		SourceCode = std::regex_replace(SourceCode, std::regex("(add|sub|mul|min|max) (oFog|oPts), (.+), ([cr][0-9]+)\\n"), "$1 $2, $3, $4.x /* added swizzle */\n");
 		SourceCode = std::regex_replace(SourceCode, std::regex("mov (oFog|oPts)(.*), (-?)([crv][0-9]+(?![\\.0-9]))"), "mov $1$2, $3$4.x /* select single component */");
 
+		// Dest register cannot be the same as first source register for m*x* instructions.
+		if (std::regex_search(SourceCode, std::regex("m.x.")))
+		{
+			// Check for unused register
+			size_t r;
+			for (r = 0; r < 12; r++)
+			{
+				if (SourceCode.find("r" + std::to_string(r)) == std::string::npos) break;
+			}
+
+			// Check if first source register is the same as the destination register
+			for (size_t j = 0; j < 12; j++)
+			{
+				const std::string reg = "(m.x.) (r" + std::to_string(j) + "), ((-?)r" + std::to_string(j) + "([\\.xyzw]*))(?![0-9])";
+
+				while (std::regex_search(SourceCode, std::regex(reg)))
+				{
+					// If there is enough remaining instructions and an unused register then update to use a temp register
+					if (r < 12 && InstructionCount < 128)
+					{
+						++InstructionCount;
+						SourceCode = std::regex_replace(SourceCode, std::regex(reg),
+							"mov r" + std::to_string(r) + ", $2 /* added line */\n    $1 $2, $4r" + std::to_string(r) + "$5 /* changed $3 to r" + std::to_string(r) + " */",
+							std::regex_constants::format_first_only);
+					}
+					// Disable line to prevent assembly error
+					else
+					{
+						SourceCode = std::regex_replace(SourceCode, std::regex("(.*" + reg + ".*)"), "/*$1*/ /* disabled this line */");
+						break;
+					}
+				}
+			}
+		}
+
 #ifndef D3D8TO9NOLOG
 		LOG << "> Dumping translated shader assembly:" << std::endl << std::endl << SourceCode << std::endl;
 #endif
