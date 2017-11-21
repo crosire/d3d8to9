@@ -1796,7 +1796,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 		{
 			const std::string reg = "r" + std::to_string(j);
 
-			if (std::regex_search(SourceCode14, std::regex(reg)))
+			if (SourceCode14.find(reg) != std::string::npos)
 			{
 				while (SourceCode14.find("t" + std::to_string(FirstReg)) != std::string::npos)
 				{
@@ -1837,7 +1837,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 			}
 
 			// Check for 'def' and add before 'phase' statment
-			else if (std::regex_search(NewLine, std::regex("def c[0-9]")))
+			else if (NewLine.find("def c") != std::string::npos)
 			{
 				PhaseMarkerSet = true;
 				const std::string tmpLine = NewLine + "\n";
@@ -1846,7 +1846,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 			}
 
 			// Check for 'tex' and update to 'texld'
-			else if (std::regex_search(NewLine, std::regex("tex t[0-9]")))
+			else if (NewLine.find("tex t") != std::string::npos)
 			{
 				const std::string regNum = std::regex_replace(NewLine, std::regex(".*tex t([0-9]).*"), "$1");
 				const std::string tmpLine = "    texld r" + regNum + ", t" + regNum + "\n";
