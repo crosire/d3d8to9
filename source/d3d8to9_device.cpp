@@ -1727,7 +1727,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 		std::regex("(add)([_satxd248]*) (r[0-9][\\.wxyz]*), ((1-|)[crtv][0-9][\\.wxyz_abdis2]*), (-)(c[0-9][\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]|)(?![_\\.wxyz])"),
 		"sub$2 $3, $4, $7$8 /* changed 'add' to 'sub' removed modifier $6 */");
 
-	// Create a temporary varables for ps_1_4
+	// Create temporary varables for ps_1_4
 	std::string SourceCode14 = SourceCode + "\n";
 	int ArithmeticCount14 = ArithmeticCount;
 
@@ -1735,14 +1735,14 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 	for (int x = 8 - ArithmeticCount; x > 0; x--)
 	{
 		// Make sure that the dest register is not already being used
-		const std::string destReg = std::regex_replace(SourceCode, std::regex("    [a-z_\\.0-9]* (r[0-9]).*(-c[0-9]|c[0-9][\\.wxyz]*_).*"),"$1", std::regex_constants::format_first_only);
-		const std::string sourceReg = std::regex_replace(SourceCode, std::regex("    [a-z_\\.0-9]* r[0-9](.*)(-c[0-9]|c[0-9][\\.wxyz]*_)(.*)"), "$1$3", std::regex_constants::format_first_only);
+		const std::string destReg = std::regex_replace(SourceCode, std::regex("[ \\+]+[a-z_\\.0-9]+ (r[0-9]).*(-c[0-9]|c[0-9][\\.wxyz]*_).*"),"$1");
+		const std::string sourceReg = std::regex_replace(SourceCode, std::regex("[ \\+]+[a-z_\\.0-9]+ r[0-9](.*)(-c[0-9]|c[0-9][\\.wxyz]*_)(.*)"), "$1$3");
 		if (sourceReg.find(destReg) != std::string::npos)
 		{
 			break;
 		}
 
-		// Replace one constant modifier using the dest register for a temporary register
+		// Replace one constant modifier using the dest register as a temporary register
 		const size_t beforeReplace = SourceCode.size();
 		SourceCode = std::regex_replace(SourceCode,
 			std::regex("    (...)(_[_satxd248]*|) (r[0-9][\\.wxyz]*), (1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?(1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?(1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?((1?-)(c[0-9])([\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]|)|(1?-?)(c[0-9])([\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]))(?![_\\.wxyz])"),
@@ -1764,14 +1764,15 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 		!std::regex_search(SourceCode, std::regex("tex[bcdmr]")) &&					// Verify unsupported instructions are not used
 		std::regex_search(SourceCode, std::regex("ps_1_[0-3]")))					// Verify PixelShader is using version 1.0 to 1.3
 	{
-		bool RegisterUsed[6] = { false };
+		bool RegisterUsed[7] = { false };
+		RegisterUsed[6] = true;
 		struct MyStrings
 		{
 			std::string dest;
 			std::string source;
 		};
 		std::vector<MyStrings> ReplaceReg;
-		std::string NewSourceCode = "    ps_1_4\n";
+		std::string NewSourceCode = "    ps_1_4 /* converted */\n";
 
 		// Ensure at least one command will be above the phase marker
 		bool PhaseMarkerSet = (ArithmeticCount14 >= 8);
@@ -1784,7 +1785,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 				if (SourceCode14.find(reg) == std::string::npos)
 				{
 					PhaseMarkerSet = true;
-					NewSourceCode.append("    def " + reg + ", 0, 0, 0, 0\n");
+					NewSourceCode.append("    def " + reg + ", 0, 0, 0, 0 /* added line */\n");
 					break;
 				}
 			}
@@ -1799,7 +1800,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 			if (SourceCode14.find(reg) != std::string::npos)
 			{
 				while (SourceCode14.find("t" + std::to_string(FirstReg)) != std::string::npos ||
-					(SourceCode14.find("t" + std::to_string(FirstReg)) != std::string::npos && j != FirstReg))
+					(SourceCode14.find("r" + std::to_string(FirstReg)) != std::string::npos && j != FirstReg))
 				{
 					FirstReg++;
 				}
@@ -1824,7 +1825,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 				break;
 			}
 			LinePosition = tmpLinePos;
-			NewLine = &SourceCode14[LinePosition];
+			NewLine = SourceCode14.substr(LinePosition, SourceCode14.length());
 			tmpLinePos = NewLine.find("\n");
 			if (tmpLinePos != std::string::npos)
 			{
@@ -1852,7 +1853,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 				const std::string regNum = std::regex_replace(NewLine, std::regex(".*tex t([0-9]).*"), "$1");
 				const std::string tmpLine = "    texld r" + regNum + ", t" + regNum + "\n";
 
-				RegisterUsed[strtol(regNum.c_str(), nullptr, 10)] = true;
+				const unsigned long Num = strtoul(regNum.c_str(), nullptr, 10);
+				RegisterUsed[(Num < 6) ? Num : 6] = true;
 				NewSourceCode.insert(PhasePosition, tmpLine);
 				if (PhaseMarkerSet)
 				{
@@ -1877,9 +1879,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 
 						if (NewSourceCode.find(reg) == std::string::npos)
 						{
-							const std::string constNum = std::regex_replace(NewLine, std::regex(".*(c[0-9])_.*|.*-(c[0-9]).*"), "$1$2");
+							const std::string constReg = std::regex_replace(NewLine, std::regex(".*-(c[0-9]).*|.*(c[0-9])[\\.wxyz]*_.*"), "$1$2");
 
-							if (std::regex_search(SourceCode14.substr(LinePosition + NewLine.length(), SourceCode14.length()), std::regex("-" + constNum + "|" + constNum + "[\\.wxyz]*_")))
+							if (std::regex_search(SourceCode14.substr(LinePosition + NewLine.length(), SourceCode14.length()), std::regex("-" + constReg + "|" + constReg + "[\\.wxyz]*_")))
 							{
 								while (j < 6 && 
 									(NewSourceCode.find("r" + std::to_string(j)) != std::string::npos ||
@@ -1890,13 +1892,13 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 								if (j < 6)
 								{
 									reg = "r" + std::to_string(j);
-									SourceCode14 = std::regex_replace(SourceCode14, std::regex(constNum), reg);
+									SourceCode14 = std::regex_replace(SourceCode14, std::regex(constReg), reg);
 								}
 							}
 
-							const std::string tmpLine = "    mov " + reg + ", " + constNum + "\n";
+							const std::string tmpLine = "    mov " + reg + ", " + constReg + "\n";
 
-							NewLine = std::regex_replace(NewLine, std::regex(constNum), reg);
+							NewLine = std::regex_replace(NewLine, std::regex(constReg), reg);
 							if (ArithmeticCount14 < 8)
 							{
 								NewSourceCode.insert(PhasePosition + TexturePosition, tmpLine);
@@ -1925,7 +1927,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 
 							if (SourceCode14.find(ReplaceReg[x].dest, start) == std::string::npos)
 							{
-								NewLine = std::regex_replace(NewLine, std::regex("([ \\+]+[a-z_\\.0-9]* )r[0-9](.*)"), "$1" + ReplaceReg[x].source + "$2");
+								NewLine = std::regex_replace(NewLine, std::regex("([ \\+]+[a-z_\\.0-9]+ )r[0-9](.*)"), "$1" + ReplaceReg[x].source + "$2");
 								ReplaceReg.erase(ReplaceReg.begin() + x);
 								break;
 							}
@@ -1943,21 +1945,22 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 
 					if (SourceCode14.find("t" + texNum, start) == std::string::npos)
 					{
-						const std::string destRegNum = std::regex_replace(NewLine, std::regex("[ \\+]+[a-z_\\.0-9]* r([0-9]).*"), "$1");
+						const std::string destRegNum = std::regex_replace(NewLine, std::regex("[ \\+]+[a-z_\\.0-9]+ r([0-9]).*"), "$1");
 
-						if (!RegisterUsed[strtol(destRegNum.c_str(), nullptr, 10)])
+						const unsigned long Num = strtoul(destRegNum.c_str(), nullptr, 10);
+						if (!RegisterUsed[(Num < 6) ? Num : 6])
 						{
 							if (NewSourceCode.find("r" + destRegNum) == std::string::npos ||
 								SourceCode14.find("r" + destRegNum, start) == std::string::npos)
 							{
-								NewLine = std::regex_replace(NewLine, std::regex("([ \\+]+[a-z_\\.0-9]* )r[0-9](.*)"), "$1r" + texNum + "$2");
-								const std::string tempSourceCode = std::regex_replace(&SourceCode14[start], std::regex("r" + destRegNum), "r" + texNum);
+								NewLine = std::regex_replace(NewLine, std::regex("([ \\+]+[a-z_\\.0-9]+ )r[0-9](.*)"), "$1r" + texNum + "$2");
+								const std::string tempSourceCode = std::regex_replace(SourceCode14.substr(start, SourceCode14.length()), std::regex("r" + destRegNum), "r" + texNum);
 								SourceCode14.resize(start);
 								SourceCode14.append(tempSourceCode);
 							}
 							else
 							{
-								RegisterUsed[strtol(destRegNum.c_str(), nullptr, 10)] = true;
+								RegisterUsed[(Num < 6) ? Num : 6] = true;
 								MyStrings tempReplaceReg;
 								tempReplaceReg.dest = "r" + destRegNum;
 								tempReplaceReg.source = "r" + texNum;
