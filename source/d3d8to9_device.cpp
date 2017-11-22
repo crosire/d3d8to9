@@ -1732,31 +1732,24 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 	int ArithmeticCount14 = ArithmeticCount;
 
 	// Fix modifiers for constant values by using any remaining arithmetic places to add an instruction to move the constant value to a temporary register
-	for (int x = 8 - ArithmeticCount; x > 0; x--)
+	while (std::regex_search(SourceCode, std::regex("-c[0-9]|c[0-9][\\.wxyz]*_")) && ArithmeticCount < 8)
 	{
 		// Make sure that the dest register is not already being used
-		const std::string destReg = std::regex_replace(SourceCode, std::regex("[ \\+]+[a-z_\\.0-9]+ (r[0-9]).*(-c[0-9]|c[0-9][\\.wxyz]*_).*"),"$1");
-		const std::string sourceReg = std::regex_replace(SourceCode, std::regex("[ \\+]+[a-z_\\.0-9]+ r[0-9](.*)(-c[0-9]|c[0-9][\\.wxyz]*_)(.*)"), "$1$3");
+		std::string SingleLine = "\n" + std::regex_replace(SourceCode, std::regex("1?-(c[0-9])[\\._a-z0-9]*|(c[0-9])[\\.wxyz]*_[a-z0-9]*"), "-$1$2") + "\n";
+		size_t StartLine = SingleLine.substr(0, SingleLine.find("-c")).rfind("\n") + 1;
+		SingleLine = SingleLine.substr(StartLine, SingleLine.find("\n", StartLine) - StartLine);
+		const std::string destReg = std::regex_replace(SingleLine, std::regex("[ \\+]+[a-z_\\.0-9]+ (r[0-9]).*-c[0-9].*"),"$1");
+		const std::string sourceReg = std::regex_replace(SingleLine, std::regex("[ \\+]+[a-z_\\.0-9]+ r[0-9][\\._a-z0-9]*, (.*)-c[0-9](.*)"), "$1$2");
 		if (sourceReg.find(destReg) != std::string::npos)
 		{
 			break;
 		}
 
 		// Replace one constant modifier using the dest register as a temporary register
-		const size_t beforeReplace = SourceCode.size();
 		SourceCode = std::regex_replace(SourceCode,
 			std::regex("    (...)(_[_satxd248]*|) (r[0-9][\\.wxyz]*), (1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?(1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?(1?-?[crtv][0-9][\\.wxyz_abdis2]*, )?((1?-)(c[0-9])([\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]|)|(1?-?)(c[0-9])([\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]))(?![_\\.wxyz])"),
 			"    mov $3, $9$10$13$14 /* added line */\n    $1$2 $3, $4$5$8$12$3$11$15 /* changed $9$10$13$14 to $3 */", std::regex_constants::format_first_only);
-
-		// Check if string was replaced
-		if (SourceCode.size() == beforeReplace)
-		{
-			break;
-		}
-		else
-		{
-			ArithmeticCount++;
-		}
+		ArithmeticCount++;
 	}
 
 	// Check if this should be converted to ps_1_4
