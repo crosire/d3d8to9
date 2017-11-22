@@ -1728,7 +1728,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 		"sub$2 $3, $4, $7$8 /* changed 'add' to 'sub' removed modifier $6 */");
 
 	// Create temporary varables for ps_1_4
-	std::string SourceCode14 = SourceCode + "\n";
+	std::string SourceCode14 = SourceCode;
 	int ArithmeticCount14 = ArithmeticCount;
 
 	// Fix modifiers for constant values by using any remaining arithmetic places to add an instruction to move the constant value to a temporary register
@@ -1757,6 +1757,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 		!std::regex_search(SourceCode, std::regex("tex[bcdmr]")) &&					// Verify unsupported instructions are not used
 		std::regex_search(SourceCode, std::regex("ps_1_[0-3]")))					// Verify PixelShader is using version 1.0 to 1.3
 	{
+		bool ConvertError = false;
 		bool RegisterUsed[7] = { false };
 		RegisterUsed[6] = true;
 		struct MyStrings
@@ -1943,6 +1944,11 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 						const unsigned long Num = strtoul(destRegNum.c_str(), nullptr, 10);
 						if (!RegisterUsed[(Num < 6) ? Num : 6])
 						{
+							if (std::regex_search(std::regex_replace(NewLine, std::regex("t" + texNum), "r" + texNum), std::regex("t[0-9]")))
+							{
+								ConvertError = true;
+								break;
+							}
 							if (NewSourceCode.find("r" + destRegNum) == std::string::npos ||
 								SourceCode14.find("r" + destRegNum, start) == std::string::npos)
 							{
@@ -1972,18 +1978,21 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 		// Add 'phase' instruction
 		NewSourceCode.insert(PhasePosition, "    phase\n");
 
-		// Test if ps_1_4 assembles
-		if (SUCCEEDED(D3DXAssembleShader(NewSourceCode.data(), static_cast<UINT>(NewSourceCode.size()), nullptr, nullptr, 0, &Assembly, &ErrorBuffer)))
+		if (!ConvertError)
 		{
-			SourceCode = NewSourceCode;
-		}
-		else
-		{
+			// Test if ps_1_4 assembles
+			if (SUCCEEDED(D3DXAssembleShader(NewSourceCode.data(), static_cast<UINT>(NewSourceCode.size()), nullptr, nullptr, 0, &Assembly, &ErrorBuffer)))
+			{
+				SourceCode = NewSourceCode;
+			}
+			else
+			{
 #ifndef D3D8TO9NOLOG
-			LOG << "> Failed to convert shader to ps_1_4" << std::endl;
-			LOG << "> Dumping translated shader assembly:" << std::endl << std::endl << NewSourceCode << std::endl;
-			LOG << "> Failed to reassemble shader:" << std::endl << std::endl << static_cast<const char *>(ErrorBuffer->GetBufferPointer()) << std::endl;
+				LOG << "> Failed to convert shader to ps_1_4" << std::endl;
+				LOG << "> Dumping translated shader assembly:" << std::endl << std::endl << NewSourceCode << std::endl;
+				LOG << "> Failed to reassemble shader:" << std::endl << std::endl << static_cast<const char *>(ErrorBuffer->GetBufferPointer()) << std::endl;
 #endif
+			}
 		}
 	}
 
