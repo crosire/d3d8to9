@@ -1295,7 +1295,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 
 		// Get number of arithmetic instructions used
 		const size_t InstructionPosition = SourceCode.find("instruction");
-		int InstructionCount = InstructionPosition > 2 && InstructionPosition < SourceCode.size() ? atoi(&SourceCode[InstructionPosition - 4]) : 0;
+		size_t InstructionCount = InstructionPosition > 2 && InstructionPosition < SourceCode.size() ? strtoul(SourceCode.substr(InstructionPosition - 4, 4).c_str(), nullptr, 10) : 0;
 
 		for (size_t j = 0; j < 8; j++)
 		{
@@ -1711,11 +1711,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 
 	// Get number of arithmetic instructions used
 	const size_t ArithmeticPosition = SourceCode.find("arithmetic");
-	int ArithmeticCount = ArithmeticPosition > 2 && ArithmeticPosition < SourceCode.size() ? atoi(&SourceCode[ArithmeticPosition - 2]) : 0;
-	if (ArithmeticCount == 0)
-	{
-		ArithmeticCount = 10; // Default to 10
-	}
+	size_t ArithmeticCount = ArithmeticPosition > 2 && ArithmeticPosition < SourceCode.size() ? strtoul(SourceCode.substr(ArithmeticPosition - 2, 2).c_str(), nullptr, 10) : 0;
+	ArithmeticCount = (ArithmeticCount != 0) ? ArithmeticCount : 10;	// Default to 10
 
 	// Remove lines when "    // ps.1.1" string is found and the next line does not start with a space
 	SourceCode = std::regex_replace(SourceCode,
@@ -1735,11 +1732,11 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 	while (std::regex_search(SourceCode, std::regex("-c[0-9]|c[0-9][\\.wxyz]*_")) && ArithmeticCount < 8)
 	{
 		// Make sure that the dest register is not already being used
-		std::string SingleLine = "\n" + std::regex_replace(SourceCode, std::regex("1?-(c[0-9])[\\._a-z0-9]*|(c[0-9])[\\.wxyz]*_[a-z0-9]*"), "-$1$2") + "\n";
-		size_t StartLine = SingleLine.substr(0, SingleLine.find("-c")).rfind("\n") + 1;
-		SingleLine = SingleLine.substr(StartLine, SingleLine.find("\n", StartLine) - StartLine);
-		const std::string destReg = std::regex_replace(SingleLine, std::regex("[ \\+]+[a-z_\\.0-9]+ (r[0-9]).*-c[0-9].*"),"$1");
-		const std::string sourceReg = std::regex_replace(SingleLine, std::regex("[ \\+]+[a-z_\\.0-9]+ r[0-9][\\._a-z0-9]*, (.*)-c[0-9](.*)"), "$1$2");
+		std::string tmpLine = "\n" + std::regex_replace(SourceCode, std::regex("1?-(c[0-9])[\\._a-z0-9]*|(c[0-9])[\\.wxyz]*_[a-z0-9]*"), "-$1$2") + "\n";
+		size_t start = tmpLine.substr(0, tmpLine.find("-c")).rfind("\n") + 1;
+		tmpLine = tmpLine.substr(start, tmpLine.find("\n", start) - start);
+		const std::string destReg = std::regex_replace(tmpLine, std::regex("[ \\+]+[a-z_\\.0-9]+ (r[0-9]).*-c[0-9].*"),"$1");
+		const std::string sourceReg = std::regex_replace(tmpLine, std::regex("[ \\+]+[a-z_\\.0-9]+ r[0-9][\\._a-z0-9]*, (.*)-c[0-9](.*)"), "$1$2");
 		if (sourceReg.find(destReg) != std::string::npos)
 		{
 			break;
