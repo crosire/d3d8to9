@@ -1829,7 +1829,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 				// Do nothing
 			}
 
-			// Check for 'def' and add before 'phase' statment
+			// Check for 'def' and add before 'phase' statement
 			else if (NewLine.find("def c") != std::string::npos)
 			{
 				PhaseMarkerSet = true;
@@ -1844,6 +1844,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 				const std::string regNum = std::regex_replace(NewLine, std::regex(".*tex t([0-9]).*"), "$1");
 				const std::string tmpLine = "    texld r" + regNum + ", t" + regNum + "\n";
 
+				// Mark as a texture register and add 'texld' statement before or after the 'phase' statement
 				const unsigned long Num = strtoul(regNum.c_str(), nullptr, 10);
 				RegisterUsed[(Num < 6) ? Num : 6] = true;
 				NewSourceCode.insert(PhasePosition, tmpLine);
@@ -1872,14 +1873,17 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 						{
 							const std::string constReg = std::regex_replace(NewLine, std::regex(".*-(c[0-9]).*|.*(c[0-9])[\\.wxyz]*_.*"), "$1$2");
 
+							// Check if this constant has modifiers in more than one line
 							if (std::regex_search(SourceCode14.substr(LinePosition + NewLine.length(), SourceCode14.length()), std::regex("-" + constReg + "|" + constReg + "[\\.wxyz]*_")))
 							{
+								// Find an unused register
 								while (j < 6 && 
 									(NewSourceCode.find("r" + std::to_string(j)) != std::string::npos ||
 									SourceCode14.find("r" + std::to_string(j)) != std::string::npos))
 								{
 									j++;
 								}
+								// Replace all constants with the unused register
 								if (j < 6)
 								{
 									reg = "r" + std::to_string(j);
@@ -1889,6 +1893,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 
 							const std::string tmpLine = "    mov " + reg + ", " + constReg + "\n";
 
+							// Update the constant in this line and add 'mov' statement before or after the 'phase' statement
 							NewLine = std::regex_replace(NewLine, std::regex(constReg), reg);
 							if (ArithmeticCount14 < 8)
 							{
@@ -1906,18 +1911,23 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 					}
 				}
 
-				// Update registers
+				// Update register from vector once it is used for the last time
 				if (ReplaceReg.size() > 0)
 				{
 					for (size_t x = 0; x < ReplaceReg.size(); x++)
 					{
+						// Check if register is used in this line
 						if (NewLine.find(ReplaceReg[x].dest) != std::string::npos)
 						{
+							// Get position of all lines after this line
 							size_t start = LinePosition + NewLine.length();
+							// Move position to next line if the first line is a co-issed command
 							start = (SourceCode14.substr(start, 4).find("+") == std::string::npos) ? start : SourceCode14.find("\n", start + 1);
 
+							// Check if register is used in the code after this position
 							if (SourceCode14.find(ReplaceReg[x].dest, start) == std::string::npos)
 							{
+								// Update dest register using source register from the vector
 								NewLine = std::regex_replace(NewLine, std::regex("([ \\+]+[a-z_\\.0-9]+ )r[0-9](.*)"), "$1" + ReplaceReg[x].source + "$2");
 								ReplaceReg.erase(ReplaceReg.begin() + x);
 								break;
@@ -1931,31 +1941,40 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 				{
 					const std::string texNum = std::regex_replace(NewLine, std::regex(".*t([0-9]).*"), "$1");
 
+					// Get position of all lines after this line
 					size_t start = LinePosition + NewLine.length();
+					// Move position to next line if the first line is a co-issed command
 					start = (SourceCode14.substr(start, 4).find("+") == std::string::npos) ? start : SourceCode14.find("\n", start + 1);
 
+					// Check if texture is used in the code after this position
 					if (SourceCode14.find("t" + texNum, start) == std::string::npos)
 					{
 						const std::string destRegNum = std::regex_replace(NewLine, std::regex("[ \\+]+[a-z_\\.0-9]+ r([0-9]).*"), "$1");
 
+						// Check if destination register is already being used by a texture register
 						const unsigned long Num = strtoul(destRegNum.c_str(), nullptr, 10);
 						if (!RegisterUsed[(Num < 6) ? Num : 6])
 						{
+							// Check if line is using more than one texture and error out
 							if (std::regex_search(std::regex_replace(NewLine, std::regex("t" + texNum), "r" + texNum), std::regex("t[0-9]")))
 							{
 								ConvertError = true;
 								break;
 							}
+							// Check if this is the first or last time the register is used
 							if (NewSourceCode.find("r" + destRegNum) == std::string::npos ||
 								SourceCode14.find("r" + destRegNum, start) == std::string::npos)
 							{
+								// Update dest register using texture register
 								NewLine = std::regex_replace(NewLine, std::regex("([ \\+]+[a-z_\\.0-9]+ )r[0-9](.*)"), "$1r" + texNum + "$2");
+								// Update code replacing all regsiters after the marked position with the texture register
 								const std::string tempSourceCode = std::regex_replace(SourceCode14.substr(start, SourceCode14.length()), std::regex("r" + destRegNum), "r" + texNum);
 								SourceCode14.resize(start);
 								SourceCode14.append(tempSourceCode);
 							}
 							else
 							{
+								// If register is still being used then add registers to vector to be replaced later
 								RegisterUsed[(Num < 6) ? Num : 6] = true;
 								MyStrings tempReplaceReg;
 								tempReplaceReg.dest = "r" + destRegNum;
@@ -1975,6 +1994,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 		// Add 'phase' instruction
 		NewSourceCode.insert(PhasePosition, "    phase\n");
 
+		// If no errors were encountered then check if code assembles
 		if (!ConvertError)
 		{
 			// Test if ps_1_4 assembles
