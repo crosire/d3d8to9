@@ -1368,6 +1368,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 		#pragma endregion
 
 		SourceCode = std::regex_replace(SourceCode, std::regex("    \\/\\/ vs\\.1\\.1\\n((?! ).+\\n)+"), "");
+		SourceCode = std::regex_replace(SourceCode, std::regex("([^\\n]\\n)[\\s]*#line [0123456789]+.*\\n"), "$1");
 		SourceCode = std::regex_replace(SourceCode, std::regex("(oFog|oPts)\\.x"), "$1 /* removed swizzle */");
 		SourceCode = std::regex_replace(SourceCode, std::regex("(add|sub|mul|min|max) (oFog|oPts), ([cr][0-9]+), (.+)\\n"), "$1 $2, $3.x /* added swizzle */, $4\n");
 		SourceCode = std::regex_replace(SourceCode, std::regex("(add|sub|mul|min|max) (oFog|oPts), (.+), ([cr][0-9]+)\\n"), "$1 $2, $3, $4.x /* added swizzle */\n");
@@ -1414,7 +1415,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 
 		if (D3DXAssembleShader != nullptr)
 		{
-			hr = D3DXAssembleShader(SourceCode.data(), static_cast<UINT>(SourceCode.size()), nullptr, nullptr, 0, &Assembly, &ErrorBuffer);
+			hr = D3DXAssembleShader(SourceCode.data(), static_cast<UINT>(SourceCode.size()), nullptr, nullptr, D3DXASM, &Assembly, &ErrorBuffer);
 		}
 		else
 		{
@@ -1757,6 +1758,11 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 		std::regex("    \\/\\/ ps\\.1\\.[1-4]\\n((?! ).+\\n)+"),
 		"");
 
+	// Remove debug lines
+	SourceCode = std::regex_replace(SourceCode,
+		std::regex("([^\\n]\\n)[\\s]*#line [0123456789]+.*\\n"),
+		"$1");
+
 	// Fix '-' modifier for constant values when using 'add' arithmetic by changing it to use 'sub'
 	SourceCode = std::regex_replace(SourceCode,
 		std::regex("(add)([_satxd248]*) (r[0-9][\\.wxyz]*), ((1-|)[crtv][0-9][\\.wxyz_abdis2]*), (-)(c[0-9][\\.wxyz]*)(_bx2|_bias|_x2|_d[zbwa]|)(?![_\\.wxyz])"),
@@ -2084,7 +2090,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 
 	if (D3DXAssembleShader != nullptr)
 	{
-		hr = D3DXAssembleShader(SourceCode.data(), static_cast<UINT>(SourceCode.size()), nullptr, nullptr, 0, &Assembly, &ErrorBuffer);
+		hr = D3DXAssembleShader(SourceCode.data(), static_cast<UINT>(SourceCode.size()), nullptr, nullptr, D3DXASM, &Assembly, &ErrorBuffer);
 	}
 	else
 	{
