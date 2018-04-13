@@ -1273,6 +1273,11 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 		}
 
 		std::string SourceCode(static_cast<const char *>(Disassembly->GetBufferPointer()), Disassembly->GetBufferSize() - 1);
+
+#ifndef D3D8TO9NOLOG
+		LOG << "> Dumping original shader assembly:" << std::endl << std::endl << SourceCode << std::endl;
+#endif
+
 		const size_t VersionPosition = SourceCode.find("vs_1_");
 
 		assert(VersionPosition != std::string::npos);
@@ -1374,7 +1379,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 		SourceCode = std::regex_replace(SourceCode, std::regex("(add|sub|mul|min|max) (oFog|oPts), (.+), ([cr][0-9]+)\\n"), "$1 $2, $3, $4.x /* added swizzle */\n");
 		SourceCode = std::regex_replace(SourceCode, std::regex("mov (oFog|oPts)(.*), (-?)([crv][0-9]+(?![\\.0-9]))"), "mov $1$2, $3$4.x /* select single component */");
 
-		// Dest register cannot be the same as first source register for m*x* instructions.
+		// Destination register cannot be the same as first source register for m*x* instructions.
 		if (std::regex_search(SourceCode, std::regex("m.x.")))
 		{
 			// Check for unused register
