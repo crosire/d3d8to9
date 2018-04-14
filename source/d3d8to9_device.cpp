@@ -737,15 +737,22 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetLightEnable(DWORD Index, BOOL *pEn
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetClipPlane(DWORD Index, const float *pPlane)
 {
-	return ProxyInterface->SetClipPlane(Index, pPlane);
+	if (pPlane == nullptr || Index >= MAX_CLIP_PLANES) return D3DERR_INVALIDCALL;
+
+	memcpy(StoredClipPlanes[Index], pPlane, sizeof(StoredClipPlanes[0]));
+	return D3D_OK;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetClipPlane(DWORD Index, float *pPlane)
 {
-	return ProxyInterface->GetClipPlane(Index, pPlane);
+	if (pPlane == nullptr || Index >= MAX_CLIP_PLANES) return D3DERR_INVALIDCALL;
+
+	memcpy(pPlane, StoredClipPlanes[Index], sizeof(StoredClipPlanes[0]));
+	return D3D_OK;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderState(D3DRENDERSTATETYPE State, DWORD Value)
 {
 	FLOAT Biased;
+	HRESULT hr;
 
 	switch (static_cast<DWORD>(State))
 	{
@@ -756,6 +763,13 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderState(D3DRENDERSTATETYPE Sta
 			return D3DERR_INVALIDCALL;
 		case D3DRS_SOFTWAREVERTEXPROCESSING:
 			return D3D_OK;
+		case D3DRS_CLIPPLANEENABLE:
+			hr = ProxyInterface->SetRenderState(State, Value);
+			if (SUCCEEDED(hr))
+			{
+				ClipPlaneRenderState = Value;
+			}
+			return hr;
 		case D3DRS_ZBIAS:
 			Biased = static_cast<FLOAT>(Value) * -0.000005f;
 			Value = *reinterpret_cast<const DWORD *>(&Biased);
@@ -1034,18 +1048,22 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetCurrentTexturePalette(UINT *pPalet
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
 {
+	ApplyClipPlanes();
 	return ProxyInterface->DrawPrimitive(PrimitiveType, StartVertex, PrimitiveCount);
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::DrawIndexedPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex, UINT NumVertices, UINT StartIndex, UINT PrimitiveCount)
 {
+	ApplyClipPlanes();
 	return ProxyInterface->DrawIndexedPrimitive(PrimitiveType, CurrentBaseVertexIndex, MinIndex, NumVertices, StartIndex, PrimitiveCount);
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, const void *pVertexStreamZeroData, UINT VertexStreamZeroStride)
 {
+	ApplyClipPlanes();
 	return ProxyInterface->DrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinVertexIndex, UINT NumVertexIndices, UINT PrimitiveCount, const void *pIndexData, D3DFORMAT IndexDataFormat, const void *pVertexStreamZeroData, UINT VertexStreamZeroStride)
 {
+	ApplyClipPlanes();
 	return ProxyInterface->DrawIndexedPrimitiveUP(PrimitiveType, MinVertexIndex, NumVertexIndices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::ProcessVertices(UINT SrcStartIndex, UINT DestIndex, UINT VertexCount, Direct3DVertexBuffer8 *pDestBuffer, DWORD Flags)
@@ -2206,4 +2224,17 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DrawTriPatch(UINT Handle, const float
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeletePatch(UINT Handle)
 {
 	return ProxyInterface->DeletePatch(Handle);
+}
+
+void Direct3DDevice8::ApplyClipPlanes()
+{
+	DWORD index = 0;
+	for (const auto clipPlane : StoredClipPlanes)
+	{
+		if ((ClipPlaneRenderState & (1 << index)) != 0)
+		{
+			ProxyInterface->SetClipPlane(index, clipPlane);
+		}
+		index++;
+	}
 }
