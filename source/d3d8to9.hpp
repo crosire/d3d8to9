@@ -181,6 +181,8 @@ private:
 	const BOOL ZBufferDiscarding = FALSE;
 	DWORD CurrentVertexShaderHandle = 0, CurrentPixelShaderHandle = 0;
 	bool PaletteFlag = false;
+	bool NewScene = true;
+	bool ViewpointFlag = false;
 
 	static constexpr size_t MAX_CLIP_PLANES = 6;
 	float StoredClipPlanes[MAX_CLIP_PLANES][4] = {};
