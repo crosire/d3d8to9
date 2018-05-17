@@ -273,7 +273,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateTexture(UINT Width, UINT Height
 		{
 			Usage |= D3DUSAGE_RENDERTARGET;
 		}
-		else
+		else if (Usage != D3DUSAGE_DEPTHSTENCIL)
 		{
 			Usage |= D3DUSAGE_DYNAMIC;
 		}
