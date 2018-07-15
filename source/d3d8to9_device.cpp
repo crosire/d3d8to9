@@ -623,9 +623,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderTarget(Direct3DSurface8 *pRe
 		{
 			return hr;
 		}
-	}
 
-	pCurrentRenderTarget = pRenderTarget->GetProxyInterface();
+		pCurrentRenderTarget = pRenderTarget->GetProxyInterface();
+	}
 
 	if (pNewZStencil != nullptr)
 	{
