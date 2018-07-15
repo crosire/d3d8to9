@@ -191,6 +191,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::Reset(D3DPRESENT_PARAMETERS8 *pPresen
 		return D3DERR_INVALIDCALL;
 	}
 
+	pCurrentRenderTarget = nullptr;
+
 	D3DPRESENT_PARAMETERS PresentParams;
 	ConvertPresentParameters(*pPresentationParameters, PresentParams);
 
@@ -410,8 +412,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateRenderTarget(UINT Width, UINT H
 		return hr;
 	}
 
-	pCurrentRenderTarget = SurfaceInterface;
-
 	*ppSurface = new Direct3DSurface8(this, SurfaceInterface);
 
 	return D3D_OK;
@@ -623,9 +623,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderTarget(Direct3DSurface8 *pRe
 		{
 			return hr;
 		}
-
-		pCurrentRenderTarget = pRenderTarget->GetProxyInterface();
 	}
+
+	pCurrentRenderTarget = pRenderTarget->GetProxyInterface();
 
 	if (pNewZStencil != nullptr)
 	{
@@ -713,9 +713,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetViewport(const D3DVIEWPORT8 *pView
 {
 	if (pCurrentRenderTarget != nullptr)
 	{
-		D3DSURFACE_DESC Desc;
-		HRESULT hr = pCurrentRenderTarget->GetDesc(&Desc);
-		if (SUCCEEDED(hr) && (pViewport->Height > Desc.Height || pViewport->Width > Desc.Width))
+		D3DSURFACE_DESC Desc = {};
+
+		if (SUCCEEDED(pCurrentRenderTarget->GetDesc(&Desc)) && (pViewport->Height > Desc.Height || pViewport->Width > Desc.Width))
 		{
 			return D3DERR_INVALIDCALL;
 		}
