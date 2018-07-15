@@ -713,7 +713,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetViewport(const D3DVIEWPORT8 *pView
 {
 	if (pCurrentRenderTarget != nullptr)
 	{
-		D3DSURFACE_DESC Desc = {};
+		D3DSURFACE_DESC Desc;
 
 		if (SUCCEEDED(pCurrentRenderTarget->GetDesc(&Desc)) && (pViewport->Height > Desc.Height || pViewport->Width > Desc.Width))
 		{
