@@ -147,6 +147,12 @@ void ConvertPresentParameters(D3DPRESENT_PARAMETERS8 &Input, D3DPRESENT_PARAMETE
 		Output.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	}
 
+	// D3DPRESENT_INTERVAL_DEFAULT is defined as zero and is equivalent to D3DPRESENT_INTERVAL_ONE in D3D9
+	if (Output.PresentationInterval == D3DPRESENT_INTERVAL_DEFAULT)
+	{
+		Output.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+	}
+
 	// D3DSWAPEFFECT_COPY_VSYNC is no longer supported in D3D9
 	if (Output.SwapEffect == D3DSWAPEFFECT_COPY_VSYNC)
 	{
