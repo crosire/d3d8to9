@@ -475,3 +475,8 @@ private:
 #ifndef D3D8TO9NOLOG
 extern std::ofstream LOG;
 #endif
+
+extern Direct3DDevice8 *pCurrentD3DDevice;
+
+REFIID ConvertREFIID(REFIID riid);
+void genericQueryInterface(REFIID riid, LPVOID *ppvObj, Direct3DDevice8* pDevice);

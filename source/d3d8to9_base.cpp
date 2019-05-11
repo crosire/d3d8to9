@@ -5,6 +5,8 @@
 
 #include "d3d8to9.hpp"
 
+Direct3DDevice8 *pCurrentD3DDevice = nullptr;
+
 static const D3DFORMAT AdapterFormats[] = {
 	D3DFMT_A8R8G8B8,
 	D3DFMT_X8R8G8B8,
@@ -62,7 +64,14 @@ HRESULT STDMETHODCALLTYPE Direct3D8::QueryInterface(REFIID riid, void **ppvObj)
 		return S_OK;
 	}
 
-	return ProxyInterface->QueryInterface(riid, ppvObj);
+	HRESULT hr = ProxyInterface->QueryInterface(ConvertREFIID(riid), ppvObj);
+
+	if (SUCCEEDED(hr))
+	{
+		genericQueryInterface(riid, ppvObj, pCurrentD3DDevice);
+	}
+
+	return hr;
 }
 ULONG STDMETHODCALLTYPE Direct3D8::AddRef()
 {
@@ -224,6 +233,8 @@ HRESULT STDMETHODCALLTYPE Direct3D8::CreateDevice(UINT Adapter, D3DDEVTYPE Devic
 	}
 
 	*ppReturnedDeviceInterface = new Direct3DDevice8(this, DeviceInterface, (PresentParams.Flags & D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL) != 0);
+
+	InterlockedExchangePointer((PVOID*)&pCurrentD3DDevice, *ppReturnedDeviceInterface);
 
 	// Set default vertex declaration
 	DeviceInterface->SetFVF(D3DFVF_XYZ);

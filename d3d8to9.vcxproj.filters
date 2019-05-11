@@ -24,6 +24,9 @@
     <ClCompile Include="source\lookup_table.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
+    <ClCompile Include="source\InterfaceQuery.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\d3dx9.hpp">

@@ -32,7 +32,14 @@ HRESULT STDMETHODCALLTYPE Direct3DSurface8::QueryInterface(REFIID riid, void **p
 		return S_OK;
 	}
 
-	return ProxyInterface->QueryInterface(riid, ppvObj);
+	HRESULT hr = ProxyInterface->QueryInterface(ConvertREFIID(riid), ppvObj);
+
+	if (SUCCEEDED(hr))
+	{
+		genericQueryInterface(riid, ppvObj, Device);
+	}
+
+	return hr;
 }
 ULONG STDMETHODCALLTYPE Direct3DSurface8::AddRef()
 {
@@ -70,7 +77,14 @@ HRESULT STDMETHODCALLTYPE Direct3DSurface8::FreePrivateData(REFGUID refguid)
 }
 HRESULT STDMETHODCALLTYPE Direct3DSurface8::GetContainer(REFIID riid, void **ppContainer)
 {
-	return ProxyInterface->GetContainer(riid, ppContainer);
+	HRESULT hr = ProxyInterface->GetContainer(ConvertREFIID(riid), ppContainer);
+
+	if (SUCCEEDED(hr))
+	{
+		genericQueryInterface(riid, ppContainer, Device);
+	}
+
+	return hr;
 }
 HRESULT STDMETHODCALLTYPE Direct3DSurface8::GetDesc(D3DSURFACE_DESC8 *pDesc)
 {
