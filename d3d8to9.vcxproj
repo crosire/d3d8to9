@@ -79,7 +79,7 @@
     <ClCompile Include="source\d3d8to9_vertex_buffer.cpp" />
     <ClCompile Include="source\d3d8to9_volume.cpp" />
     <ClCompile Include="source\d3d8types.cpp" />
-    <ClCompile Include="source\InterfaceQuery.cpp" />
+    <ClCompile Include="source\interface_query.cpp" />
     <ClCompile Include="source\lookup_table.cpp" />
   </ItemGroup>
   <ItemGroup>
