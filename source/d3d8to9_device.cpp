@@ -23,9 +23,6 @@ Direct3DDevice8::Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterfac
 }
 Direct3DDevice8::~Direct3DDevice8()
 {
-	PVOID NullValue = nullptr;
-	InterlockedCompareExchangePointer((PVOID*)&pCurrentD3DDevice, NullValue, this);
-
 	delete ProxyAddressLookupTable;
 }
 
