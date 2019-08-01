@@ -43,7 +43,14 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::QueryInterface(REFIID riid, void **pp
 		return S_OK;
 	}
 
-	return ProxyInterface->QueryInterface(riid, ppvObj);
+	HRESULT hr = ProxyInterface->QueryInterface(ConvertREFIID(riid), ppvObj);
+
+	if (SUCCEEDED(hr))
+	{
+		genericQueryInterface(riid, ppvObj, this);
+	}
+
+	return hr;
 }
 ULONG STDMETHODCALLTYPE Direct3DDevice8::AddRef()
 {
@@ -542,13 +549,21 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CopyRects(Direct3DSurface8 *pSourceSu
 
 		if (SourceDesc.Pool == D3DPOOL_MANAGED || DestinationDesc.Pool != D3DPOOL_DEFAULT)
 		{
+			hr = D3DERR_INVALIDCALL;
 			if (D3DXLoadSurfaceFromSurface != nullptr)
 			{
-				hr = D3DXLoadSurfaceFromSurface(pDestinationSurface->GetProxyInterface(), nullptr, &DestinationRect, pSourceSurface->GetProxyInterface(), nullptr, &SourceRect, D3DX_FILTER_NONE, 0);
-			}
-			else
-			{
-				hr = D3DERR_INVALIDCALL;
+				if (SUCCEEDED(D3DXLoadSurfaceFromSurface(pDestinationSurface->GetProxyInterface(), nullptr, &DestinationRect, pSourceSurface->GetProxyInterface(), nullptr, &SourceRect, D3DX_FILTER_NONE, 0)))
+				{
+					// Explicitly call AddDirtyRect on the surface
+					void *pContainer = nullptr;
+					if (SUCCEEDED(pDestinationSurface->GetContainer(IID_IDirect3DTexture9, &pContainer)) && pContainer)
+					{
+						IDirect3DTexture9 *pTexture = (IDirect3DTexture9*)pContainer;
+						pTexture->AddDirtyRect(&DestinationRect);
+						pTexture->Release();
+					}
+					hr = D3D_OK;
+				}
 			}
 		}
 		else if (SourceDesc.Pool == D3DPOOL_DEFAULT)
