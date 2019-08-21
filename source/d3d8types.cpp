@@ -129,16 +129,10 @@ void ConvertPresentParameters(D3DPRESENT_PARAMETERS8 &Input, D3DPRESENT_PARAMETE
 	Output.FullScreen_RefreshRateInHz = Input.FullScreen_RefreshRateInHz;
 	Output.PresentationInterval = Input.FullScreen_PresentationInterval;
 
-	// MultiSampleType must be D3DMULTISAMPLE_NONE unless SwapEffect has been set to D3DSWAPEFFECT_DISCARD
-	if (Output.SwapEffect != D3DSWAPEFFECT_DISCARD)
+	// MultiSampleType must be D3DMULTISAMPLE_NONE unless SwapEffect has been set to D3DSWAPEFFECT_DISCARD or if there is a lockable backbuffer
+	if (Output.SwapEffect != D3DSWAPEFFECT_DISCARD || (Output.Flags & D3DPRESENTFLAG_LOCKABLE_BACKBUFFER))
 	{
 		Output.MultiSampleType = D3DMULTISAMPLE_NONE;
-	}
-
-	// Remove Flags that are not compatible with multisampling
-	if (Output.MultiSampleType != D3DMULTISAMPLE_NONE)
-	{
-		Output.Flags &= ~D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
 	}
 
 	// D3DPRESENT_RATE_UNLIMITED is no longer supported in D3D9
