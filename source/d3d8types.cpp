@@ -64,7 +64,6 @@ static UINT CalcTextureSize(UINT Width, UINT Height, UINT Depth, D3DFORMAT Forma
 			return ((Width + 3) >> 2) * ((Height + 3) >> 2) * 16;
 	}
 }
-
 void ConvertCaps(D3DCAPS9 &Input, D3DCAPS8 &Output)
 {
 	CopyMemory(&Output, &Input, sizeof(Output));
@@ -82,7 +81,6 @@ void ConvertCaps(D3DCAPS9 &Input, D3DCAPS8 &Output)
 	// D3D8 can only handle up to 256 for MaxVertexShaderConst
 	Output.MaxVertexShaderConst = min(256, Input.MaxVertexShaderConst);
 }
-
 void ConvertVolumeDesc(D3DVOLUME_DESC &Input, D3DVOLUME_DESC8 &Output)
 {
 	Output.Format = Input.Format;
@@ -104,14 +102,7 @@ void ConvertSurfaceDesc(D3DSURFACE_DESC &Input, D3DSURFACE_DESC8 &Output)
 	Output.MultiSampleType = Input.MultiSampleType;
 	Output.Width = Input.Width;
 	Output.Height = Input.Height;
-
-	// Check for D3DMULTISAMPLE_NONMASKABLE and change it to D3DMULTISAMPLE_NONE for best D3D8 compatibility.
-	if (Output.MultiSampleType == D3DMULTISAMPLE_NONMASKABLE)
-	{
-		Output.MultiSampleType = D3DMULTISAMPLE_NONE;
-	}
 }
-
 void ConvertPresentParameters(D3DPRESENT_PARAMETERS8 &Input, D3DPRESENT_PARAMETERS &Output)
 {
 	Output.BackBufferWidth = Input.BackBufferWidth;
@@ -136,13 +127,19 @@ void ConvertPresentParameters(D3DPRESENT_PARAMETERS8 &Input, D3DPRESENT_PARAMETE
 	}
 
 	// D3DPRESENT_RATE_UNLIMITED is no longer supported in D3D9
-	if (Output.PresentationInterval == D3DPRESENT_RATE_UNLIMITED)
+	if (Output.FullScreen_RefreshRateInHz == D3DPRESENT_RATE_UNLIMITED)
+	{
+		Output.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+	}
+
+	// Windowed mode should always present immediately
+	if (Output.Windowed)
 	{
 		Output.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	}
 
-	// D3DPRESENT_INTERVAL_DEFAULT is defined as zero and is equivalent to D3DPRESENT_INTERVAL_ONE in D3D9
-	if (Output.PresentationInterval == D3DPRESENT_INTERVAL_DEFAULT)
+	// Fulscreen mode defaults to D3DPRESENT_INTERVAL_ONE
+	if (!Output.Windowed && Output.PresentationInterval == D3DPRESENT_INTERVAL_DEFAULT)
 	{
 		Output.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
 	}
@@ -150,8 +147,11 @@ void ConvertPresentParameters(D3DPRESENT_PARAMETERS8 &Input, D3DPRESENT_PARAMETE
 	// D3DSWAPEFFECT_COPY_VSYNC is no longer supported in D3D9
 	if (Output.SwapEffect == D3DSWAPEFFECT_COPY_VSYNC)
 	{
-		Output.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
 		Output.SwapEffect = D3DSWAPEFFECT_COPY;
+		if (!Output.Windowed && Output.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE)
+		{
+			Output.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+		}
 	}
 }
 void ConvertAdapterIdentifier(D3DADAPTER_IDENTIFIER9 &Input, D3DADAPTER_IDENTIFIER8 &Output)
