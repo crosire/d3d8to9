@@ -787,13 +787,14 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderState(D3DRENDERSTATETYPE Sta
 
 	switch (static_cast<DWORD>(State))
 	{
-		case D3DRS_LINEPATTERN:
 		case D3DRS_ZVISIBLE:
-		case D3DRS_EDGEANTIALIAS:
-		case D3DRS_PATCHSEGMENTS:
 			return D3DERR_INVALIDCALL;
+		case D3DRS_PATCHSEGMENTS:
+		case D3DRS_LINEPATTERN:
 		case D3DRS_SOFTWAREVERTEXPROCESSING:
 			return D3D_OK;
+		case D3DRS_EDGEANTIALIAS:
+			return ProxyInterface->SetRenderState(D3DRS_ANTIALIASEDLINEENABLE, Value);
 		case D3DRS_CLIPPLANEENABLE:
 			hr = ProxyInterface->SetRenderState(State, Value);
 			if (SUCCEEDED(hr))
@@ -821,10 +822,13 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetRenderState(D3DRENDERSTATETYPE Sta
 
 	switch (static_cast<DWORD>(State))
 	{
-		case D3DRS_LINEPATTERN:
 		case D3DRS_ZVISIBLE:
-		case D3DRS_EDGEANTIALIAS:
 			return D3DERR_INVALIDCALL;
+		case D3DRS_LINEPATTERN:
+			*pValue = 0;
+			return D3D_OK;
+		case D3DRS_EDGEANTIALIAS:
+			return ProxyInterface->GetRenderState(D3DRS_ANTIALIASEDLINEENABLE, pValue);
 		case D3DRS_ZBIAS:
 			hr = ProxyInterface->GetRenderState(D3DRS_DEPTHBIAS, pValue);
 			*pValue = static_cast<DWORD>(*reinterpret_cast<const FLOAT *>(pValue) * -500000.0f);
@@ -1460,6 +1464,19 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 						break;
 					}
 				}
+			}
+		}
+
+		// Vertex shader must minimally write all four components (xyzw) of oPos output register. (fix error X5350)
+		if (std::regex_search(SourceCode, std::regex("    ([a-z2-4]*) oPos\\.")) && !std::regex_search(SourceCode, std::regex("    ([a-z2-4]*) oPos,")))
+		{
+			bool xReg = std::regex_search(SourceCode, std::regex("    ([a-z2-4]*) oPos\\.[y|z|w]*x"));
+			bool yReg = std::regex_search(SourceCode, std::regex("    ([a-z2-4]*) oPos\\.[x|z|w]*y"));
+			bool zReg = std::regex_search(SourceCode, std::regex("    ([a-z2-4]*) oPos\\.[x|y|w]*z"));
+			bool wReg = std::regex_search(SourceCode, std::regex("    ([a-z2-4]*) oPos\\.[x|y|z]*w"));
+			if (!xReg || !yReg || !zReg || !wReg)
+			{
+				SourceCode = std::regex_replace(SourceCode, std::regex("    ([a-z2-4]*) (oPos\\.[x|y|z|w]*,) ([^\\n]*)\\n"), "    $1 oPos, $3 /* removed oPos swizzles */\n");
 			}
 		}
 
