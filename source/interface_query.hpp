@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include <unordered_map>
 #include <algorithm>
+#include <unordered_map>
 
 class AddressLookupTable
 {
@@ -39,23 +39,20 @@ class AddressLookupTable
 
 
 public:
-	explicit AddressLookupTable(Direct3DDevice8 *Device);
+	explicit AddressLookupTable(Direct3DDevice8 *Device) : Device(Device) {}
 	~AddressLookupTable();
 
 	template <typename T>
 	T *FindAddress(void *pAddress9)
 	{
 		if (pAddress9 == nullptr)
-		{
 			return nullptr;
-		}
 
-		auto it = AddressCache[AddressCacheIndex<T>::CacheIndex].find(pAddress9);
+		auto &cache = AddressCache[AddressCacheIndex<T>::CacheIndex];
 
-		if (it != std::end(AddressCache[AddressCacheIndex<T>::CacheIndex]))
-		{
+		const auto it = cache.find(pAddress9);
+		if (it != cache.end())
 			return static_cast<T *>(it->second);
-		}
 
 		return new T(Device, static_cast<AddressCacheIndex<T>::Type9 *>(pAddress9));
 	}
@@ -64,9 +61,7 @@ public:
 	void SaveAddress(T *pAddress8, void *pAddress9)
 	{
 		if (pAddress8 == nullptr || pAddress9 == nullptr)
-		{
 			return;
-		}
 
 		AddressCache[AddressCacheIndex<T>::CacheIndex][pAddress9] = pAddress8;
 	}
@@ -75,33 +70,32 @@ public:
 	void DeleteAddress(T *pAddress8)
 	{
 		if (pAddress8 == nullptr)
-		{
 			return;
-		}
 
-		constexpr UINT CacheIndex = AddressCacheIndex<T>::CacheIndex;
+		auto &cache = AddressCache[AddressCacheIndex<T>::CacheIndex];
 
-		auto it = std::find_if(AddressCache[CacheIndex].begin(), AddressCache[CacheIndex].end(),
-			[pAddress8](std::pair<void*, class AddressLookupTableObject*> Map) -> bool { return Map.second == pAddress8; });
-
-		if (it != std::end(AddressCache[CacheIndex]))
-		{
-			it = AddressCache[CacheIndex].erase(it);
-		}
+		const auto it = std::find_if(cache.begin(), cache.end(),
+			[pAddress8](std::pair<void *, class AddressLookupTableObject *> Map) -> bool { return Map.second == pAddress8; });
+		if (it != cache.end())
+			cache.erase(it);
 	}
 
 private:
 	Direct3DDevice8 *const Device;
-	std::unordered_map<void*, class AddressLookupTableObject*> AddressCache[8];
+	std::unordered_map<void *, class AddressLookupTableObject *> AddressCache[8];
 };
 
 class AddressLookupTableObject
 {
 public:
-	virtual ~AddressLookupTableObject() { }
+	virtual ~AddressLookupTableObject() {}
 
 	void DeleteMe()
 	{
 		delete this;
 	}
 };
+
+void GenericQueryInterface(REFIID riid, LPVOID *ppvObj, class Direct3DDevice8 *pDevice);
+
+REFIID ConvertREFIID(REFIID riid);

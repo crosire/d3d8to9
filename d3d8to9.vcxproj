@@ -82,14 +82,13 @@
     <ClCompile Include="source\d3d8to9_volume.cpp" />
     <ClCompile Include="source\d3d8types.cpp" />
     <ClCompile Include="source\interface_query.cpp" />
-    <ClCompile Include="source\lookup_table.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="res\resource.h" />
     <ClInclude Include="source\d3d8to9.hpp" />
     <ClInclude Include="source\d3d8types.hpp" />
     <ClInclude Include="source\d3dx9.hpp" />
-    <ClInclude Include="source\lookup_table.hpp" />
+    <ClInclude Include="source\interface_query.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\d3d8.def" />

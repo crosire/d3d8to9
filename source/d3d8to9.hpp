@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "d3d8types.hpp"
 #include <vector>
+#include "d3d8types.hpp"
 
 class __declspec(uuid("1DD9E8DA-1C77-4D40-B0CF-98FEFDFF9512")) Direct3D8;
 class __declspec(uuid("7385E5DF-8FE8-41D5-86B6-D7B48547B6CF")) Direct3DDevice8;
@@ -21,7 +21,7 @@ class __declspec(uuid("BD7349F5-14F1-42E4-9C79-972380DB40C0")) Direct3DVolume8;
 class __declspec(uuid("8AEEEAC7-05F9-44D4-B591-000B0DF1CB95")) Direct3DVertexBuffer8;
 class __declspec(uuid("0E689C9A-053D-44A0-9D92-DB0E3D750F86")) Direct3DIndexBuffer8;
 
-#include "lookup_table.hpp"
+#include "interface_query.hpp"
 
 class Direct3D8 : public IUnknown
 {
@@ -475,6 +475,3 @@ private:
 #ifndef D3D8TO9NOLOG
 extern std::ofstream LOG;
 #endif
-
-REFIID ConvertREFIID(REFIID riid);
-void genericQueryInterface(REFIID riid, LPVOID *ppvObj, Direct3DDevice8* pDevice);

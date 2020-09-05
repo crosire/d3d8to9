@@ -17,7 +17,7 @@ A quick overview of what some of the source code files contain:
 |[d3d8to9_base.cpp](source/d3d8to9_base.cpp)               | Implementation of the `IDirect3D8` interface, including device creation         |
 |[d3d8to9_device.cpp](source/d3d8to9_device.cpp)           | Implementation of the `IDirect3DDevice8` interface, including shader conversion |
 |[d3d8types.hpp](source/d3d8types.hpp)                     | Declaration of all used D3D8 types one would otherwise find in d3d8.h           |
-|[lookup_table.hpp](source/lookup_table.hpp)               | Table to map D3D9 interface addresses to their matching D3D8 implementations    |
+|[interface_query.hpp](source/interface_query.hpp)         | Table to map D3D9 interface addresses to their matching D3D8 implementations    |
 
 ## Contributing
 
