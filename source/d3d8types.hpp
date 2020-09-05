@@ -154,9 +154,10 @@ struct D3DADAPTER_IDENTIFIER8
 	DWORD WHQLLevel;
 };
 
+bool SupportsPalettes();
+
 void ConvertCaps(D3DCAPS9 &input, D3DCAPS8 &output);
 void ConvertVolumeDesc(D3DVOLUME_DESC &input, D3DVOLUME_DESC8 &output);
 void ConvertSurfaceDesc(D3DSURFACE_DESC &input, D3DSURFACE_DESC8 &output);
 void ConvertPresentParameters(D3DPRESENT_PARAMETERS8 &input, D3DPRESENT_PARAMETERS &output);
 void ConvertAdapterIdentifier(D3DADAPTER_IDENTIFIER9 &input, D3DADAPTER_IDENTIFIER8 &output);
-bool SupportsPalettes();
