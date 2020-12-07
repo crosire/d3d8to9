@@ -12,30 +12,6 @@ class AddressLookupTable
 {
 	template <typename T>
 	struct AddressCacheIndex;
-	template <>
-	struct AddressCacheIndex<Direct3DSurface8>
-	{ static constexpr UINT CacheIndex = 0; using Type9 = IDirect3DSurface9; };
-	template <>
-	struct AddressCacheIndex<Direct3DTexture8>
-	{ static constexpr UINT CacheIndex = 1; using Type9 = IDirect3DTexture9; };
-	template <>
-	struct AddressCacheIndex<Direct3DVolumeTexture8>
-	{ static constexpr UINT CacheIndex = 2; using Type9 = IDirect3DVolumeTexture9; };
-	template <>
-	struct AddressCacheIndex<Direct3DCubeTexture8>
-	{ static constexpr UINT CacheIndex = 3; using Type9 = IDirect3DCubeTexture9; };
-	template <>
-	struct AddressCacheIndex<Direct3DVolume8>
-	{ static constexpr UINT CacheIndex = 4; using Type9 = IDirect3DVolume9; };
-	template <>
-	struct AddressCacheIndex<Direct3DVertexBuffer8>
-	{ static constexpr UINT CacheIndex = 5; using Type9 = IDirect3DVertexBuffer9; };
-	template <>
-	struct AddressCacheIndex<Direct3DIndexBuffer8>
-	{ static constexpr UINT CacheIndex = 6; using Type9 = IDirect3DIndexBuffer9; };
-	template <>
-	struct AddressCacheIndex<Direct3DSwapChain8>
-	{ static constexpr UINT CacheIndex = 7; using Type9 = IDirect3DSwapChain9; };
 
 
 public:
@@ -54,7 +30,7 @@ public:
 		if (it != cache.end())
 			return static_cast<T *>(it->second);
 
-		return new T(Device, static_cast<AddressCacheIndex<T>::Type9 *>(pAddress9));
+		return new T(Device, static_cast<typename AddressCacheIndex<T>::Type9 *>(pAddress9));
 	}
 
 	template <typename T>
@@ -84,6 +60,31 @@ private:
 	Direct3DDevice8 *const Device;
 	std::unordered_map<void *, class AddressLookupTableObject *> AddressCache[8];
 };
+
+template <>
+struct AddressLookupTable::AddressCacheIndex<Direct3DSurface8>
+{ static constexpr UINT CacheIndex = 0; using Type9 = IDirect3DSurface9; };
+template <>
+struct AddressLookupTable::AddressCacheIndex<Direct3DTexture8>
+{ static constexpr UINT CacheIndex = 1; using Type9 = IDirect3DTexture9; };
+template <>
+struct AddressLookupTable::AddressCacheIndex<Direct3DVolumeTexture8>
+{ static constexpr UINT CacheIndex = 2; using Type9 = IDirect3DVolumeTexture9; };
+template <>
+struct AddressLookupTable::AddressCacheIndex<Direct3DCubeTexture8>
+{ static constexpr UINT CacheIndex = 3; using Type9 = IDirect3DCubeTexture9; };
+template <>
+struct AddressLookupTable::AddressCacheIndex<Direct3DVolume8>
+{ static constexpr UINT CacheIndex = 4; using Type9 = IDirect3DVolume9; };
+template <>
+struct AddressLookupTable::AddressCacheIndex<Direct3DVertexBuffer8>
+{ static constexpr UINT CacheIndex = 5; using Type9 = IDirect3DVertexBuffer9; };
+template <>
+struct AddressLookupTable::AddressCacheIndex<Direct3DIndexBuffer8>
+{ static constexpr UINT CacheIndex = 6; using Type9 = IDirect3DIndexBuffer9; };
+template <>
+struct AddressLookupTable::AddressCacheIndex<Direct3DSwapChain8>
+{ static constexpr UINT CacheIndex = 7; using Type9 = IDirect3DSwapChain9; };
 
 class AddressLookupTableObject
 {
