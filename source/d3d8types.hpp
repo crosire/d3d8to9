@@ -2,6 +2,10 @@
 
 struct IUnknown;
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #include <d3d9.h>
 
 #define D3DFMT_W11V11U10 65
@@ -46,10 +50,20 @@ struct IUnknown;
 #define D3DVSD_CONSTADDRESSMASK (0x7F << D3DVSD_CONSTADDRESSSHIFT)
 #define D3DVSD_END() 0xFFFFFFFF
 
+// Fix for MinGW headers which are missing defines in d3d9.h...
+#ifndef D3DENUM_WHQL_LEVEL
+#define D3DENUM_WHQL_LEVEL 0x00000002L
+#endif
+// Fix for MinGW headers which have some d3d8 defines in d3d9.h...
+#ifndef D3DENUM_NO_WHQL_LEVEL
 #define D3DENUM_NO_WHQL_LEVEL 0x00000002L
+#endif
 #define D3DSWAPEFFECT_COPY_VSYNC 4
 #define D3DPRESENT_RATE_UNLIMITED 0x7FFFFFFF
+// Fix for MinGW headers which have some d3d8 defines in d3d9.h...
+#ifndef D3DCAPS2_CANRENDERWINDOWED
 #define D3DCAPS2_CANRENDERWINDOWED 0x00080000L
+#endif
 #define D3DPRASTERCAPS_ZBIAS 0x00004000L
 
 typedef D3DLIGHT9 D3DLIGHT8;

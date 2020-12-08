@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #include <d3d9.h>
 
 #define D3DX_FILTER_NONE 1

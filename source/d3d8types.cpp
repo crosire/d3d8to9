@@ -5,6 +5,7 @@
 
 #include "d3d8types.hpp"
 #include <assert.h>
+#include <algorithm>
 
 bool SupportsPalettes()
 {
@@ -88,7 +89,7 @@ void ConvertCaps(D3DCAPS9 &Input, D3DCAPS8 &Output)
 	// Set default vertex shader version to 1.1 for D3D8 compatibility
 	Output.VertexShaderVersion = D3DVS_VERSION(1, 1);
 	// D3D8 can only handle up to 256 for MaxVertexShaderConst
-	Output.MaxVertexShaderConst = min(256, Input.MaxVertexShaderConst);
+	Output.MaxVertexShaderConst = std::min(256ul, Input.MaxVertexShaderConst);
 }
 
 void ConvertVolumeDesc(D3DVOLUME_DESC &Input, D3DVOLUME_DESC8 &Output)
