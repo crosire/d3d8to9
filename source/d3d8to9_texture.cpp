@@ -143,8 +143,8 @@ HRESULT STDMETHODCALLTYPE Direct3DTexture8::AddDirtyRect(const RECT *pDirtyRect)
 }
 
 Direct3DCubeTexture8::Direct3DCubeTexture8(Direct3DDevice8 *device, IDirect3DCubeTexture9 *ProxyInterface) :
-	ProxyInterface(ProxyInterface),
-	Device(device)
+	Device(device),
+	ProxyInterface(ProxyInterface)
 {
 	Device->ProxyAddressLookupTable->SaveAddress(this, ProxyInterface);
 }
@@ -281,8 +281,9 @@ HRESULT STDMETHODCALLTYPE Direct3DCubeTexture8::AddDirtyRect(D3DCUBEMAP_FACES Fa
 }
 
 Direct3DVolumeTexture8::Direct3DVolumeTexture8(Direct3DDevice8 *device, IDirect3DVolumeTexture9 *ProxyInterface) :
-	ProxyInterface(ProxyInterface),
-	Device(device)
+	Device(device),
+	ProxyInterface(ProxyInterface)
+
 {
 	Device->ProxyAddressLookupTable->SaveAddress(this, ProxyInterface);
 }
