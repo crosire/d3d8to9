@@ -283,7 +283,6 @@ HRESULT STDMETHODCALLTYPE Direct3DCubeTexture8::AddDirtyRect(D3DCUBEMAP_FACES Fa
 Direct3DVolumeTexture8::Direct3DVolumeTexture8(Direct3DDevice8 *device, IDirect3DVolumeTexture9 *ProxyInterface) :
 	Device(device),
 	ProxyInterface(ProxyInterface)
-
 {
 	Device->ProxyAddressLookupTable->SaveAddress(this, ProxyInterface);
 }

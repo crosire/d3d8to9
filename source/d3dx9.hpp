@@ -11,11 +11,11 @@
 #define D3DXASM_DEBUG 0x0001
 #define D3DXASM_SKIPVALIDATION  0x0010
 
-#if _DEBUG
-#define D3DXASM_FLAGS D3DXASM_DEBUG
-#else
+#ifdef NDEBUG
 #define D3DXASM_FLAGS  0
-#endif // _DEBUG
+#else
+#define D3DXASM_FLAGS D3DXASM_DEBUG
+#endif // NDEBUG
 
 struct D3DXMACRO
 {
