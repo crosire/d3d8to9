@@ -46,3 +46,5 @@ else()
 endif()
 
 target_link_libraries(d3d8to9 d3d9)
+
+target_link_options(d3d8to9 PRIVATE -Wl,--enable-stdcall-fixup ${CMAKE_CURRENT_SOURCE_DIR}/res/d3d8.def)
