@@ -18,6 +18,7 @@ set(SRCS
   source/d3dx9.hpp
   source/interface_query.cpp
   source/interface_query.hpp
+  res/d3d8to9.rc
 )
 
 set(CMAKE_CXX_STANDARD 17)
