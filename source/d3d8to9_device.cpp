@@ -1833,7 +1833,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 							if (std::regex_search(SourceCode14.substr(LinePosition + NewLine.length(), SourceCode14.length()), std::regex("-" + constReg + "|" + constReg + "[\\.wxyz]*_")))
 							{
 								// Find an unused register
-								while (j < 6 && 
+								while (j < 6 &&
 									(NewSourceCode.find("r" + std::to_string(j)) != std::string::npos ||
 									SourceCode14.find("r" + std::to_string(j)) != std::string::npos))
 								{
