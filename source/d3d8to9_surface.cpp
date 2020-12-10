@@ -5,7 +5,6 @@
 
 #include "d3d8to9.hpp"
 
-// IDirect3DSurface8
 Direct3DSurface8::Direct3DSurface8(Direct3DDevice8 *Device, IDirect3DSurface9 *ProxyInterface) :
 	Device(Device), ProxyInterface(ProxyInterface)
 {
@@ -18,26 +17,20 @@ Direct3DSurface8::~Direct3DSurface8()
 HRESULT STDMETHODCALLTYPE Direct3DSurface8::QueryInterface(REFIID riid, void **ppvObj)
 {
 	if (ppvObj == nullptr)
-	{
 		return E_POINTER;
-	}
 
 	if (riid == __uuidof(this) ||
 		riid == __uuidof(IUnknown))
 	{
 		AddRef();
-
 		*ppvObj = this;
 
 		return S_OK;
 	}
 
-	HRESULT hr = ProxyInterface->QueryInterface(ConvertREFIID(riid), ppvObj);
-
+	const HRESULT hr = ProxyInterface->QueryInterface(ConvertREFIID(riid), ppvObj);
 	if (SUCCEEDED(hr))
-	{
-		genericQueryInterface(riid, ppvObj, Device);
-	}
+		GenericQueryInterface(riid, ppvObj, Device);
 
 	return hr;
 }
@@ -53,9 +46,7 @@ ULONG STDMETHODCALLTYPE Direct3DSurface8::Release()
 HRESULT STDMETHODCALLTYPE Direct3DSurface8::GetDevice(Direct3DDevice8 **ppDevice)
 {
 	if (ppDevice == nullptr)
-	{
 		return D3DERR_INVALIDCALL;
-	}
 
 	Device->AddRef();
 
@@ -77,30 +68,22 @@ HRESULT STDMETHODCALLTYPE Direct3DSurface8::FreePrivateData(REFGUID refguid)
 }
 HRESULT STDMETHODCALLTYPE Direct3DSurface8::GetContainer(REFIID riid, void **ppContainer)
 {
-	HRESULT hr = ProxyInterface->GetContainer(ConvertREFIID(riid), ppContainer);
-
+	const HRESULT hr = ProxyInterface->GetContainer(ConvertREFIID(riid), ppContainer);
 	if (SUCCEEDED(hr))
-	{
-		genericQueryInterface(riid, ppContainer, Device);
-	}
+		GenericQueryInterface(riid, ppContainer, Device);
 
 	return hr;
 }
 HRESULT STDMETHODCALLTYPE Direct3DSurface8::GetDesc(D3DSURFACE_DESC8 *pDesc)
 {
 	if (pDesc == nullptr)
-	{
 		return D3DERR_INVALIDCALL;
-	}
 
 	D3DSURFACE_DESC SurfaceDesc;
 
 	const HRESULT hr = ProxyInterface->GetDesc(&SurfaceDesc);
-
 	if (FAILED(hr))
-	{
 		return hr;
-	}
 
 	ConvertSurfaceDesc(SurfaceDesc, *pDesc);
 
