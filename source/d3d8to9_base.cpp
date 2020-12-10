@@ -13,18 +13,14 @@ static const D3DFORMAT AdapterFormats[] = {
 	D3DFMT_A1R5G5B5
 };
 
-// IDirect3D8
 Direct3D8::Direct3D8(IDirect3D9 *ProxyInterface) :
 	ProxyInterface(ProxyInterface)
 {
 	D3DDISPLAYMODE pMode;
 
 	CurrentAdapterCount = ProxyInterface->GetAdapterCount();
-
 	if (CurrentAdapterCount > MaxAdapters)
-	{
 		CurrentAdapterCount = MaxAdapters;
-	}
 
 	for (UINT Adapter = 0; Adapter < CurrentAdapterCount; Adapter++)
 	{
@@ -48,15 +44,12 @@ Direct3D8::~Direct3D8()
 HRESULT STDMETHODCALLTYPE Direct3D8::QueryInterface(REFIID riid, void **ppvObj)
 {
 	if (ppvObj == nullptr)
-	{
 		return E_POINTER;
-	}
 
 	if (riid == __uuidof(this) ||
 		riid == __uuidof(IUnknown))
 	{
 		AddRef();
-
 		*ppvObj = this;
 
 		return S_OK;
@@ -73,9 +66,7 @@ ULONG STDMETHODCALLTYPE Direct3D8::Release()
 	const ULONG LastRefCount = ProxyInterface->Release();
 
 	if (LastRefCount == 0)
-	{
 		delete this;
-	}
 
 	return LastRefCount;
 }
@@ -91,9 +82,7 @@ UINT STDMETHODCALLTYPE Direct3D8::GetAdapterCount()
 HRESULT STDMETHODCALLTYPE Direct3D8::GetAdapterIdentifier(UINT Adapter, DWORD Flags, D3DADAPTER_IDENTIFIER8 *pIdentifier)
 {
 	if (pIdentifier == nullptr)
-	{
 		return D3DERR_INVALIDCALL;
-	}
 
 	D3DADAPTER_IDENTIFIER9 AdapterIndentifier;
 
@@ -107,11 +96,8 @@ HRESULT STDMETHODCALLTYPE Direct3D8::GetAdapterIdentifier(UINT Adapter, DWORD Fl
 	}
 
 	const HRESULT hr = ProxyInterface->GetAdapterIdentifier(Adapter, Flags, &AdapterIndentifier);
-
 	if (FAILED(hr))
-	{
 		return hr;
-	}
 
 	ConvertAdapterIdentifier(AdapterIndentifier, *pIdentifier);
 
@@ -124,9 +110,7 @@ UINT STDMETHODCALLTYPE Direct3D8::GetAdapterModeCount(UINT Adapter)
 HRESULT STDMETHODCALLTYPE Direct3D8::EnumAdapterModes(UINT Adapter, UINT Mode, D3DDISPLAYMODE *pMode)
 {
 	if (pMode == nullptr || !(Adapter < CurrentAdapterCount && Mode < CurrentAdapterModeCount[Adapter]))
-	{
 		return D3DERR_INVALIDCALL;
-	}
 
 	pMode->Format = CurrentAdapterModes[Adapter].at(Mode).Format;
 	pMode->Height = CurrentAdapterModes[Adapter].at(Mode).Height;
@@ -145,10 +129,14 @@ HRESULT STDMETHODCALLTYPE Direct3D8::CheckDeviceType(UINT Adapter, D3DDEVTYPE Ch
 }
 HRESULT STDMETHODCALLTYPE Direct3D8::CheckDeviceFormat(UINT Adapter, D3DDEVTYPE DeviceType, D3DFORMAT AdapterFormat, DWORD Usage, D3DRESOURCETYPE RType, D3DFORMAT CheckFormat)
 {
-	if (CheckFormat == D3DFMT_UYVY || CheckFormat == D3DFMT_YUY2 || CheckFormat == MAKEFOURCC('Y', 'V', '1', '2') || CheckFormat == MAKEFOURCC('N', 'V', '1', '2'))
+	if (CheckFormat == D3DFMT_UYVY ||
+		CheckFormat == D3DFMT_YUY2 ||
+		CheckFormat == MAKEFOURCC('Y', 'V', '1', '2') ||
+		CheckFormat == MAKEFOURCC('N', 'V', '1', '2'))
 	{
 		return D3DERR_NOTAVAILABLE;
 	}
+
 	return ProxyInterface->CheckDeviceFormat(Adapter, DeviceType, AdapterFormat, Usage, RType, CheckFormat);
 }
 HRESULT STDMETHODCALLTYPE Direct3D8::CheckDeviceMultiSampleType(UINT Adapter, D3DDEVTYPE DeviceType, D3DFORMAT SurfaceFormat, BOOL Windowed, D3DMULTISAMPLE_TYPE MultiSampleType)
@@ -162,18 +150,13 @@ HRESULT STDMETHODCALLTYPE Direct3D8::CheckDepthStencilMatch(UINT Adapter, D3DDEV
 HRESULT STDMETHODCALLTYPE Direct3D8::GetDeviceCaps(UINT Adapter, D3DDEVTYPE DeviceType, D3DCAPS8 *pCaps)
 {
 	if (pCaps == nullptr)
-	{
 		return D3DERR_INVALIDCALL;
-	}
 
 	D3DCAPS9 DeviceCaps;
 
 	const HRESULT hr = ProxyInterface->GetDeviceCaps(Adapter, DeviceType, &DeviceCaps);
-
 	if (FAILED(hr))
-	{
 		return hr;
-	}
 
 	ConvertCaps(DeviceCaps, *pCaps);
 
@@ -190,9 +173,7 @@ HRESULT STDMETHODCALLTYPE Direct3D8::CreateDevice(UINT Adapter, D3DDEVTYPE Devic
 #endif
 
 	if (pPresentationParameters == nullptr || ppReturnedDeviceInterface == nullptr)
-	{
 		return D3DERR_INVALIDCALL;
-	}
 
 	*ppReturnedDeviceInterface = nullptr;
 
@@ -216,12 +197,9 @@ HRESULT STDMETHODCALLTYPE Direct3D8::CreateDevice(UINT Adapter, D3DDEVTYPE Devic
 
 	IDirect3DDevice9 *DeviceInterface = nullptr;
 
-	HRESULT hr = ProxyInterface->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &PresentParams, &DeviceInterface);
-
+	const HRESULT hr = ProxyInterface->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &PresentParams, &DeviceInterface);
 	if (FAILED(hr))
-	{
 		return hr;
-	}
 
 	*ppReturnedDeviceInterface = new Direct3DDevice8(this, DeviceInterface, (PresentParams.Flags & D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL) != 0);
 

@@ -5,6 +5,15 @@
 
 #include "d3d8types.hpp"
 #include <assert.h>
+#include <algorithm>
+
+bool SupportsPalettes()
+{
+	HDC hDC = GetDC(nullptr);
+	bool hasPalette = (GetDeviceCaps(hDC, RASTERCAPS) & RC_PALETTE) != 0;
+	ReleaseDC(nullptr, hDC);
+	return hasPalette;
+}
 
 static UINT CalcTextureSize(UINT Width, UINT Height, UINT Depth, D3DFORMAT Format)
 {
@@ -79,7 +88,7 @@ void ConvertCaps(D3DCAPS9 &Input, D3DCAPS8 &Output)
 	// Set default vertex shader version to 1.1 for D3D8 compatibility
 	Output.VertexShaderVersion = D3DVS_VERSION(1, 1);
 	// D3D8 can only handle up to 256 for MaxVertexShaderConst
-	Output.MaxVertexShaderConst = min(256, Input.MaxVertexShaderConst);
+	Output.MaxVertexShaderConst = std::min(256ul, Input.MaxVertexShaderConst);
 }
 void ConvertVolumeDesc(D3DVOLUME_DESC &Input, D3DVOLUME_DESC8 &Output)
 {
@@ -117,8 +126,6 @@ void ConvertPresentParameters(D3DPRESENT_PARAMETERS8 &Input, D3DPRESENT_PARAMETE
 	Output.EnableAutoDepthStencil = Input.EnableAutoDepthStencil;
 	Output.AutoDepthStencilFormat = Input.AutoDepthStencilFormat;
 	Output.Flags = Input.Flags;
-	Output.FullScreen_RefreshRateInHz = Input.FullScreen_RefreshRateInHz;
-	Output.PresentationInterval = Input.FullScreen_PresentationInterval;
 
 	// MultiSampleType must be D3DMULTISAMPLE_NONE unless SwapEffect has been set to D3DSWAPEFFECT_DISCARD or if there is a lockable backbuffer
 	if (Output.SwapEffect != D3DSWAPEFFECT_DISCARD || (Output.Flags & D3DPRESENTFLAG_LOCKABLE_BACKBUFFER))
@@ -126,34 +133,40 @@ void ConvertPresentParameters(D3DPRESENT_PARAMETERS8 &Input, D3DPRESENT_PARAMETE
 		Output.MultiSampleType = D3DMULTISAMPLE_NONE;
 	}
 
-	// D3DPRESENT_RATE_UNLIMITED is no longer supported in D3D9
-	if (Output.FullScreen_RefreshRateInHz == D3DPRESENT_RATE_UNLIMITED)
+	if (Input.Windowed)
 	{
-		Output.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-	}
-
-	// Windowed mode should always present immediately
-	if (Output.Windowed)
-	{
+		Output.FullScreen_RefreshRateInHz = 0;
+		// D3D8 always presents without waiting for vblank when windowed
 		Output.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	}
-
-	// Fulscreen mode defaults to D3DPRESENT_INTERVAL_ONE
-	if (!Output.Windowed && Output.PresentationInterval == D3DPRESENT_INTERVAL_DEFAULT)
+	else
 	{
-		Output.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+		// D3DPRESENT_RATE_UNLIMITED is no longer supported in D3D9
+		if (Input.FullScreen_RefreshRateInHz == D3DPRESENT_RATE_UNLIMITED)
+		{
+			Output.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+		}
+		else
+		{
+			Output.FullScreen_RefreshRateInHz = Input.FullScreen_RefreshRateInHz;
+		}
+
+		// D3DPRESENT_INTERVAL_DEFAULT is equivalent to D3DPRESENT_INTERVAL_ONE in D3D9
+		Output.PresentationInterval = Input.FullScreen_PresentationInterval;
 	}
 
 	// D3DSWAPEFFECT_COPY_VSYNC is no longer supported in D3D9
 	if (Output.SwapEffect == D3DSWAPEFFECT_COPY_VSYNC)
 	{
-		Output.SwapEffect = D3DSWAPEFFECT_COPY;
-		if (!Output.Windowed && Output.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE)
+		Output.SwapEffect  = D3DSWAPEFFECT_COPY;
+		// Need to wait for vblank before copying (both when windowed and full-screen)
+		if (Output.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE)
 		{
-			Output.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+			Output.PresentationInterval  = D3DPRESENT_INTERVAL_ONE;
 		}
 	}
 }
+
 void ConvertAdapterIdentifier(D3DADAPTER_IDENTIFIER9 &Input, D3DADAPTER_IDENTIFIER8 &Output)
 {
 	CopyMemory(Output.Driver, Input.Driver, MAX_DEVICE_IDENTIFIER_STRING);
@@ -165,11 +178,4 @@ void ConvertAdapterIdentifier(D3DADAPTER_IDENTIFIER9 &Input, D3DADAPTER_IDENTIFI
 	Output.Revision = Input.Revision;
 	Output.DeviceIdentifier = Input.DeviceIdentifier;
 	Output.WHQLLevel = Input.WHQLLevel;
-}
-bool SupportsPalettes()
-{
-	HDC hDC = GetDC(nullptr);
-	bool hasPalette = (GetDeviceCaps(hDC, RASTERCAPS) & RC_PALETTE) != 0;
-	ReleaseDC(nullptr, hDC);
-	return hasPalette;
 }
