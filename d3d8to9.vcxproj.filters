@@ -9,9 +9,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\d3d8types.cpp">
-      <Filter>helpers</Filter>
-    </ClCompile>
     <ClCompile Include="source\d3d8to9.cpp" />
     <ClCompile Include="source\d3d8to9_base.cpp" />
     <ClCompile Include="source\d3d8to9_device.cpp" />
@@ -21,7 +18,7 @@
     <ClCompile Include="source\d3d8to9_texture.cpp" />
     <ClCompile Include="source\d3d8to9_vertex_buffer.cpp" />
     <ClCompile Include="source\d3d8to9_volume.cpp" />
-    <ClCompile Include="source\lookup_table.cpp">
+    <ClCompile Include="source\d3d8types.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
     <ClCompile Include="source\interface_query.cpp">
@@ -29,17 +26,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\d3dx9.hpp">
-      <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="source\d3d8types.hpp">
-      <Filter>helpers</Filter>
-    </ClInclude>
     <ClInclude Include="res\resource.h">
       <Filter>resources</Filter>
     </ClInclude>
     <ClInclude Include="source\d3d8to9.hpp" />
-    <ClInclude Include="source\lookup_table.hpp">
+    <ClInclude Include="source\d3d8types.hpp">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\d3dx9.hpp">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\interface_query.hpp">
       <Filter>helpers</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,7 +5,6 @@
 
 #include "d3d8to9.hpp"
 
-// IDirect3DIndexBuffer8
 Direct3DIndexBuffer8::Direct3DIndexBuffer8(Direct3DDevice8 *Device, IDirect3DIndexBuffer9 *ProxyInterface) :
 	Device(Device), ProxyInterface(ProxyInterface)
 {
@@ -18,27 +17,21 @@ Direct3DIndexBuffer8::~Direct3DIndexBuffer8()
 HRESULT STDMETHODCALLTYPE Direct3DIndexBuffer8::QueryInterface(REFIID riid, void **ppvObj)
 {
 	if (ppvObj == nullptr)
-	{
 		return E_POINTER;
-	}
 
 	if (riid == __uuidof(this) ||
 		riid == __uuidof(IUnknown) ||
 		riid == __uuidof(Direct3DResource8))
 	{
 		AddRef();
-
 		*ppvObj = this;
 
 		return S_OK;
 	}
 
-	HRESULT hr = ProxyInterface->QueryInterface(ConvertREFIID(riid), ppvObj);
-
+	const HRESULT hr = ProxyInterface->QueryInterface(ConvertREFIID(riid), ppvObj);
 	if (SUCCEEDED(hr))
-	{
-		genericQueryInterface(riid, ppvObj, Device);
-	}
+		GenericQueryInterface(riid, ppvObj, Device);
 
 	return hr;
 }
@@ -54,12 +47,9 @@ ULONG STDMETHODCALLTYPE Direct3DIndexBuffer8::Release()
 HRESULT STDMETHODCALLTYPE Direct3DIndexBuffer8::GetDevice(Direct3DDevice8 **ppDevice)
 {
 	if (ppDevice == nullptr)
-	{
 		return D3DERR_INVALIDCALL;
-	}
 
 	Device->AddRef();
-
 	*ppDevice = Device;
 
 	return D3D_OK;
@@ -100,7 +90,8 @@ HRESULT STDMETHODCALLTYPE Direct3DIndexBuffer8::Lock(UINT OffsetToLock, UINT Siz
 		D3DINDEXBUFFER_DESC desc;
 		ProxyInterface->GetDesc(&desc);
 
-		if ((desc.Usage & D3DUSAGE_DYNAMIC) == 0 || (desc.Usage & D3DUSAGE_WRITEONLY) == 0)
+		if ((desc.Usage & D3DUSAGE_DYNAMIC) == 0 ||
+			(desc.Usage & D3DUSAGE_WRITEONLY) == 0)
 		{
 			Flags ^= D3DLOCK_DISCARD;
 		}
