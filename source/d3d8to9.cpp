@@ -15,7 +15,7 @@ PFN_D3DXLoadSurfaceFromSurface D3DXLoadSurfaceFromSurface = nullptr;
 std::ofstream LOG;
 #endif
 
-extern "C" Direct3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
+extern "C" IDirect3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
 {
 #ifndef D3D8TO9NOLOG
 	static bool LogMessageFlag = true;

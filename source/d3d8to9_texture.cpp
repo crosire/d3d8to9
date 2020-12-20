@@ -19,13 +19,13 @@ HRESULT STDMETHODCALLTYPE Direct3DTexture8::QueryInterface(REFIID riid, void **p
 	if (ppvObj == nullptr)
 		return E_POINTER;
 
-	if (riid == __uuidof(this) ||
+	if (riid == __uuidof(IDirect3DTexture8) ||
 		riid == __uuidof(IUnknown) ||
-		riid == __uuidof(Direct3DResource8) ||
-		riid == __uuidof(Direct3DBaseTexture8))
+		riid == __uuidof(IDirect3DResource8) ||
+		riid == __uuidof(IDirect3DBaseTexture8))
 	{
 		AddRef();
-		*ppvObj = this;
+		*ppvObj = static_cast<IDirect3DTexture8 *>(this);
 
 		return S_OK;
 	}
@@ -45,7 +45,7 @@ ULONG STDMETHODCALLTYPE Direct3DTexture8::Release()
 	return ProxyInterface->Release();
 }
 
-HRESULT STDMETHODCALLTYPE Direct3DTexture8::GetDevice(Direct3DDevice8 **ppDevice)
+HRESULT STDMETHODCALLTYPE Direct3DTexture8::GetDevice(IDirect3DDevice8 **ppDevice)
 {
 	if (ppDevice == nullptr)
 		return D3DERR_INVALIDCALL;
@@ -112,7 +112,7 @@ HRESULT STDMETHODCALLTYPE Direct3DTexture8::GetLevelDesc(UINT Level, D3DSURFACE_
 
 	return D3D_OK;
 }
-HRESULT STDMETHODCALLTYPE Direct3DTexture8::GetSurfaceLevel(UINT Level, Direct3DSurface8 **ppSurfaceLevel)
+HRESULT STDMETHODCALLTYPE Direct3DTexture8::GetSurfaceLevel(UINT Level, IDirect3DSurface8 **ppSurfaceLevel)
 {
 	if (ppSurfaceLevel == nullptr)
 		return D3DERR_INVALIDCALL;
@@ -157,13 +157,13 @@ HRESULT STDMETHODCALLTYPE Direct3DCubeTexture8::QueryInterface(REFIID riid, void
 	if (ppvObj == nullptr)
 		return E_POINTER;
 
-	if (riid == __uuidof(this) ||
+	if (riid == __uuidof(IDirect3DCubeTexture8) ||
 		riid == __uuidof(IUnknown) ||
-		riid == __uuidof(Direct3DResource8) ||
-		riid == __uuidof(Direct3DBaseTexture8))
+		riid == __uuidof(IDirect3DResource8) ||
+		riid == __uuidof(IDirect3DBaseTexture8))
 	{
 		AddRef();
-		*ppvObj = this;
+		*ppvObj = static_cast<IDirect3DCubeTexture8 *>(this);
 
 		return S_OK;
 	}
@@ -183,7 +183,7 @@ ULONG STDMETHODCALLTYPE Direct3DCubeTexture8::Release()
 	return ProxyInterface->Release();
 }
 
-HRESULT STDMETHODCALLTYPE Direct3DCubeTexture8::GetDevice(Direct3DDevice8 **ppDevice)
+HRESULT STDMETHODCALLTYPE Direct3DCubeTexture8::GetDevice(IDirect3DDevice8 **ppDevice)
 {
 	if (ppDevice == nullptr)
 		return D3DERR_INVALIDCALL;
@@ -250,7 +250,7 @@ HRESULT STDMETHODCALLTYPE Direct3DCubeTexture8::GetLevelDesc(UINT Level, D3DSURF
 
 	return D3D_OK;
 }
-HRESULT STDMETHODCALLTYPE Direct3DCubeTexture8::GetCubeMapSurface(D3DCUBEMAP_FACES FaceType, UINT Level, Direct3DSurface8 **ppCubeMapSurface)
+HRESULT STDMETHODCALLTYPE Direct3DCubeTexture8::GetCubeMapSurface(D3DCUBEMAP_FACES FaceType, UINT Level, IDirect3DSurface8 **ppCubeMapSurface)
 {
 	if (ppCubeMapSurface == nullptr)
 		return D3DERR_INVALIDCALL;
@@ -295,13 +295,13 @@ HRESULT STDMETHODCALLTYPE Direct3DVolumeTexture8::QueryInterface(REFIID riid, vo
 	if (ppvObj == nullptr)
 		return E_POINTER;
 
-	if (riid == __uuidof(this) ||
+	if (riid == __uuidof(IDirect3DVolumeTexture8) ||
 		riid == __uuidof(IUnknown) ||
-		riid == __uuidof(Direct3DResource8) ||
-		riid == __uuidof(Direct3DBaseTexture8))
+		riid == __uuidof(IDirect3DResource8) ||
+		riid == __uuidof(IDirect3DBaseTexture8))
 	{
 		AddRef();
-		*ppvObj = this;
+		*ppvObj = static_cast<IDirect3DVolumeTexture8 *>(this);
 
 		return S_OK;
 	}
@@ -321,7 +321,7 @@ ULONG STDMETHODCALLTYPE Direct3DVolumeTexture8::Release()
 	return ProxyInterface->Release();
 }
 
-HRESULT STDMETHODCALLTYPE Direct3DVolumeTexture8::GetDevice(Direct3DDevice8 **ppDevice)
+HRESULT STDMETHODCALLTYPE Direct3DVolumeTexture8::GetDevice(IDirect3DDevice8 **ppDevice)
 {
 	if (ppDevice == nullptr)
 		return D3DERR_INVALIDCALL;
@@ -388,7 +388,7 @@ HRESULT STDMETHODCALLTYPE Direct3DVolumeTexture8::GetLevelDesc(UINT Level, D3DVO
 
 	return D3D_OK;
 }
-HRESULT STDMETHODCALLTYPE Direct3DVolumeTexture8::GetVolumeLevel(UINT Level, Direct3DVolume8 **ppVolumeLevel)
+HRESULT STDMETHODCALLTYPE Direct3DVolumeTexture8::GetVolumeLevel(UINT Level, IDirect3DVolume8 **ppVolumeLevel)
 {
 	if (ppVolumeLevel == nullptr)
 		return D3DERR_INVALIDCALL;

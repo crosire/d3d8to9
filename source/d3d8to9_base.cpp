@@ -46,11 +46,11 @@ HRESULT STDMETHODCALLTYPE Direct3D8::QueryInterface(REFIID riid, void **ppvObj)
 	if (ppvObj == nullptr)
 		return E_POINTER;
 
-	if (riid == __uuidof(this) ||
+	if (riid == __uuidof(IDirect3D8) ||
 		riid == __uuidof(IUnknown))
 	{
 		AddRef();
-		*ppvObj = this;
+		*ppvObj = static_cast<IDirect3D8 *>(this);
 
 		return S_OK;
 	}
@@ -166,7 +166,7 @@ HMONITOR STDMETHODCALLTYPE Direct3D8::GetAdapterMonitor(UINT Adapter)
 {
 	return ProxyInterface->GetAdapterMonitor(Adapter);
 }
-HRESULT STDMETHODCALLTYPE Direct3D8::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS8 *pPresentationParameters, Direct3DDevice8 **ppReturnedDeviceInterface)
+HRESULT STDMETHODCALLTYPE Direct3D8::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS8 *pPresentationParameters, IDirect3DDevice8 **ppReturnedDeviceInterface)
 {
 #ifndef D3D8TO9NOLOG
 	LOG << "Redirecting '" << "IDirect3D8::CreateDevice" << "(" << this << ", " << Adapter << ", " << DeviceType << ", " << hFocusWindow << ", " << BehaviorFlags << ", " << pPresentationParameters << ", " << ppReturnedDeviceInterface << ")' ..." << std::endl;

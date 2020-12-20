@@ -13,6 +13,7 @@ set(SRCS
   source/d3d8to9_texture.cpp
   source/d3d8to9_vertex_buffer.cpp
   source/d3d8to9_volume.cpp
+  source/d3d8.hpp
   source/d3d8types.cpp
   source/d3d8types.hpp
   source/d3dx9.hpp
