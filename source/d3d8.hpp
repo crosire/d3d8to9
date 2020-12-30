@@ -7,18 +7,22 @@
 
 #include "d3d8types.hpp"
 
-class DECLSPEC_UUID("1DD9E8DA-1C77-4D40-B0CF-98FEFDFF9512") IDirect3D8;
-class DECLSPEC_UUID("7385E5DF-8FE8-41D5-86B6-D7B48547B6CF") IDirect3DDevice8;
-class DECLSPEC_UUID("928C088B-76B9-4C6B-A536-A590853876CD") IDirect3DSwapChain8;
-class DECLSPEC_UUID("1B36BB7B-09B7-410A-B445-7D1430D7B33F") IDirect3DResource8;
-class DECLSPEC_UUID("B4211CFA-51B9-4A9F-AB78-DB99B2BB678E") IDirect3DBaseTexture8;
-class DECLSPEC_UUID("E4CDD575-2866-4F01-B12E-7EECE1EC9358") IDirect3DTexture8;
-class DECLSPEC_UUID("3EE5B968-2ACA-4C34-8BB5-7E0C3D19B750") IDirect3DCubeTexture8;
-class DECLSPEC_UUID("4B8AAAFA-140F-42BA-9131-597EAFAA2EAD") IDirect3DVolumeTexture8;
-class DECLSPEC_UUID("B96EEBCA-B326-4EA5-882F-2FF5BAE021DD") IDirect3DSurface8;
-class DECLSPEC_UUID("BD7349F5-14F1-42E4-9C79-972380DB40C0") IDirect3DVolume8;
-class DECLSPEC_UUID("8AEEEAC7-05F9-44D4-B591-000B0DF1CB95") IDirect3DVertexBuffer8;
-class DECLSPEC_UUID("0E689C9A-053D-44A0-9D92-DB0E3D750F86") IDirect3DIndexBuffer8;
+#ifndef interface
+#define interface struct
+#endif
+
+interface DECLSPEC_UUID("1DD9E8DA-1C77-4D40-B0CF-98FEFDFF9512") IDirect3D8;
+interface DECLSPEC_UUID("7385E5DF-8FE8-41D5-86B6-D7B48547B6CF") IDirect3DDevice8;
+interface DECLSPEC_UUID("928C088B-76B9-4C6B-A536-A590853876CD") IDirect3DSwapChain8;
+interface DECLSPEC_UUID("1B36BB7B-09B7-410A-B445-7D1430D7B33F") IDirect3DResource8;
+interface DECLSPEC_UUID("B4211CFA-51B9-4A9F-AB78-DB99B2BB678E") IDirect3DBaseTexture8;
+interface DECLSPEC_UUID("E4CDD575-2866-4F01-B12E-7EECE1EC9358") IDirect3DTexture8;
+interface DECLSPEC_UUID("3EE5B968-2ACA-4C34-8BB5-7E0C3D19B750") IDirect3DCubeTexture8;
+interface DECLSPEC_UUID("4B8AAAFA-140F-42BA-9131-597EAFAA2EAD") IDirect3DVolumeTexture8;
+interface DECLSPEC_UUID("B96EEBCA-B326-4EA5-882F-2FF5BAE021DD") IDirect3DSurface8;
+interface DECLSPEC_UUID("BD7349F5-14F1-42E4-9C79-972380DB40C0") IDirect3DVolume8;
+interface DECLSPEC_UUID("8AEEEAC7-05F9-44D4-B591-000B0DF1CB95") IDirect3DVertexBuffer8;
+interface DECLSPEC_UUID("0E689C9A-053D-44A0-9D92-DB0E3D750F86") IDirect3DIndexBuffer8;
 
 // MinGW support
 #ifdef __CRT_UUID_DECL
@@ -36,9 +40,8 @@ __CRT_UUID_DECL(IDirect3DVertexBuffer8, 0x8AEEEAC7, 0x05F9, 0x44D4, 0xB5, 0x91, 
 __CRT_UUID_DECL(IDirect3DIndexBuffer8, 0x0E689C9A, 0x053D, 0x44A0, 0x9D, 0x92, 0xDB,0x0E,0x3D,0x75,0x0F,0x86)
 #endif
 
-class IDirect3D8 : public IUnknown
+interface IDirect3D8 : public IUnknown
 {
-public:
 	virtual HRESULT STDMETHODCALLTYPE RegisterSoftwareDevice(void *pInitializeFunction) = 0;
 	virtual UINT STDMETHODCALLTYPE GetAdapterCount() = 0;
 	virtual HRESULT STDMETHODCALLTYPE GetAdapterIdentifier(UINT Adapter, DWORD Flags, D3DADAPTER_IDENTIFIER8 *pIdentifier) = 0;
@@ -54,9 +57,8 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS8 *pPresentationParameters, IDirect3DDevice8 **ppReturnedDeviceInterface) = 0;
 };
 
-class IDirect3DDevice8 : public IUnknown
+interface IDirect3DDevice8 : public IUnknown
 {
-public:
 	virtual HRESULT STDMETHODCALLTYPE TestCooperativeLevel() = 0;
 	virtual UINT STDMETHODCALLTYPE GetAvailableTextureMem() = 0;
 	virtual HRESULT STDMETHODCALLTYPE ResourceManagerDiscardBytes(DWORD Bytes) = 0;
@@ -153,16 +155,14 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE DeletePatch(UINT Handle) = 0;
 };
 
-class IDirect3DSwapChain8 : public IUnknown
+interface IDirect3DSwapChain8 : public IUnknown
 {
-public:
 	virtual HRESULT STDMETHODCALLTYPE Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion) = 0;
 	virtual HRESULT STDMETHODCALLTYPE GetBackBuffer(UINT iBackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface8 **ppBackBuffer) = 0;
 };
 
-class IDirect3DResource8 : public IUnknown
+interface IDirect3DResource8 : public IUnknown
 {
-public:
 	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice8 **ppDevice) = 0;
 	virtual HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID refguid, const void *pData, DWORD SizeOfData, DWORD Flags) = 0;
 	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void *pData, DWORD *pSizeOfData) = 0;
@@ -173,17 +173,15 @@ public:
 	virtual D3DRESOURCETYPE STDMETHODCALLTYPE GetType() = 0;
 };
 
-class IDirect3DBaseTexture8 : public IDirect3DResource8
+interface IDirect3DBaseTexture8 : public IDirect3DResource8
 {
-public:
 	virtual DWORD STDMETHODCALLTYPE SetLOD(DWORD LODNew) = 0;
 	virtual DWORD STDMETHODCALLTYPE GetLOD() = 0;
 	virtual DWORD STDMETHODCALLTYPE GetLevelCount() = 0;
 };
 
-class IDirect3DTexture8 : public IDirect3DBaseTexture8
+interface IDirect3DTexture8 : public IDirect3DBaseTexture8
 {
-public:
 	virtual HRESULT STDMETHODCALLTYPE GetLevelDesc(UINT Level, D3DSURFACE_DESC8 *pDesc) = 0;
 	virtual HRESULT STDMETHODCALLTYPE GetSurfaceLevel(UINT Level, IDirect3DSurface8 **ppSurfaceLevel) = 0;
 	virtual HRESULT STDMETHODCALLTYPE LockRect(UINT Level, D3DLOCKED_RECT *pLockedRect, const RECT *pRect, DWORD Flags) = 0;
@@ -191,9 +189,8 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE AddDirtyRect(const RECT *pDirtyRect) = 0;
 };
 
-class IDirect3DCubeTexture8 : public IDirect3DBaseTexture8
+interface IDirect3DCubeTexture8 : public IDirect3DBaseTexture8
 {
-public:
 	virtual HRESULT STDMETHODCALLTYPE GetLevelDesc(UINT Level, D3DSURFACE_DESC8 *pDesc) = 0;
 	virtual HRESULT STDMETHODCALLTYPE GetCubeMapSurface(D3DCUBEMAP_FACES FaceType, UINT Level, IDirect3DSurface8 **ppCubeMapSurface) = 0;
 	virtual HRESULT STDMETHODCALLTYPE LockRect(D3DCUBEMAP_FACES FaceType, UINT Level, D3DLOCKED_RECT *pLockedRect, const RECT *pRect, DWORD Flags) = 0;
@@ -201,9 +198,8 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE AddDirtyRect(D3DCUBEMAP_FACES FaceType, const RECT *pDirtyRect) = 0;
 };
 
-class IDirect3DVolumeTexture8 : public IDirect3DBaseTexture8
+interface IDirect3DVolumeTexture8 : public IDirect3DBaseTexture8
 {
-public:
 	virtual HRESULT STDMETHODCALLTYPE GetLevelDesc(UINT Level, D3DVOLUME_DESC8 *pDesc) = 0;
 	virtual HRESULT STDMETHODCALLTYPE GetVolumeLevel(UINT Level, IDirect3DVolume8 **ppVolumeLevel) = 0;
 	virtual HRESULT STDMETHODCALLTYPE LockBox(UINT Level, D3DLOCKED_BOX *pLockedVolume, const D3DBOX *pBox, DWORD Flags) = 0;
@@ -211,9 +207,8 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE AddDirtyBox(const D3DBOX *pDirtyBox) = 0;
 };
 
-class IDirect3DSurface8 : public IUnknown
+interface IDirect3DSurface8 : public IUnknown
 {
-public:
 	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice8 **ppDevice) = 0;
 	virtual HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID refguid, const void *pData, DWORD SizeOfData, DWORD Flags) = 0;
 	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void *pData, DWORD *pSizeOfData) = 0;
@@ -224,9 +219,8 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE UnlockRect() = 0;
 };
 
-class IDirect3DVolume8 : public IUnknown
+interface IDirect3DVolume8 : public IUnknown
 {
-public:
 	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice8 **ppDevice) = 0;
 	virtual HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID refguid, const void *pData, DWORD SizeOfData, DWORD Flags) = 0;
 	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void *pData, DWORD *pSizeOfData) = 0;
@@ -237,17 +231,15 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE UnlockBox() = 0;
 };
 
-class IDirect3DVertexBuffer8 : public IDirect3DResource8
+interface IDirect3DVertexBuffer8 : public IDirect3DResource8
 {
-public:
 	virtual HRESULT STDMETHODCALLTYPE Lock(UINT OffsetToLock, UINT SizeToLock, BYTE **ppbData, DWORD Flags) = 0;
 	virtual HRESULT STDMETHODCALLTYPE Unlock() = 0;
 	virtual HRESULT STDMETHODCALLTYPE GetDesc(D3DVERTEXBUFFER_DESC *pDesc) = 0;
 };
 
-class IDirect3DIndexBuffer8 : public IDirect3DResource8
+interface IDirect3DIndexBuffer8 : public IDirect3DResource8
 {
-public:
 	virtual HRESULT STDMETHODCALLTYPE Lock(UINT OffsetToLock, UINT SizeToLock, BYTE **ppbData, DWORD Flags) = 0;
 	virtual HRESULT STDMETHODCALLTYPE Unlock() = 0;
 	virtual HRESULT STDMETHODCALLTYPE GetDesc(D3DINDEXBUFFER_DESC *pDesc) = 0;
