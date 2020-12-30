@@ -19,11 +19,11 @@ HRESULT STDMETHODCALLTYPE Direct3DSwapChain8::QueryInterface(REFIID riid, void *
 	if (ppvObj == nullptr)
 		return E_POINTER;
 
-	if (riid == __uuidof(this) ||
+	if (riid == __uuidof(IDirect3DSwapChain8) ||
 		riid == __uuidof(IUnknown))
 	{
 		AddRef();
-		*ppvObj = this;
+		*ppvObj = static_cast<IDirect3DSwapChain8 *>(this);
 
 		return S_OK;
 	}
@@ -49,7 +49,7 @@ HRESULT STDMETHODCALLTYPE Direct3DSwapChain8::Present(const RECT *pSourceRect, c
 
 	return ProxyInterface->Present(pSourceRect, pDestRect, hDestWindowOverride, nullptr, 0);
 }
-HRESULT STDMETHODCALLTYPE Direct3DSwapChain8::GetBackBuffer(UINT iBackBuffer, D3DBACKBUFFER_TYPE Type, Direct3DSurface8 **ppBackBuffer)
+HRESULT STDMETHODCALLTYPE Direct3DSwapChain8::GetBackBuffer(UINT iBackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface8 **ppBackBuffer)
 {
 	if (ppBackBuffer == nullptr)
 		return D3DERR_INVALIDCALL;

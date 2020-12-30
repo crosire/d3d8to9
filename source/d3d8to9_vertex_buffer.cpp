@@ -19,12 +19,12 @@ HRESULT STDMETHODCALLTYPE Direct3DVertexBuffer8::QueryInterface(REFIID riid, voi
 	if (ppvObj == nullptr)
 		return E_POINTER;
 
-	if (riid == __uuidof(this) ||
+	if (riid == __uuidof(IDirect3DVertexBuffer8) ||
 		riid == __uuidof(IUnknown) ||
-		riid == __uuidof(Direct3DResource8))
+		riid == __uuidof(IDirect3DResource8))
 	{
 		AddRef();
-		*ppvObj = this;
+		*ppvObj = static_cast<IDirect3DVertexBuffer8 *>(this);
 
 		return S_OK;
 	}
@@ -44,7 +44,7 @@ ULONG STDMETHODCALLTYPE Direct3DVertexBuffer8::Release()
 	return ProxyInterface->Release();
 }
 
-HRESULT STDMETHODCALLTYPE Direct3DVertexBuffer8::GetDevice(Direct3DDevice8 **ppDevice)
+HRESULT STDMETHODCALLTYPE Direct3DVertexBuffer8::GetDevice(IDirect3DDevice8 **ppDevice)
 {
 	if (ppDevice == nullptr)
 		return D3DERR_INVALIDCALL;

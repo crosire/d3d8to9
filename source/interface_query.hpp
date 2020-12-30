@@ -8,6 +8,17 @@
 #include <algorithm>
 #include <unordered_map>
 
+class Direct3D8;
+class Direct3DDevice8;
+class Direct3DSwapChain8;
+class Direct3DTexture8;
+class Direct3DCubeTexture8;
+class Direct3DVolumeTexture8;
+class Direct3DSurface8;
+class Direct3DVolume8;
+class Direct3DVertexBuffer8;
+class Direct3DIndexBuffer8;
+
 class AddressLookupTable
 {
 	template <typename T>

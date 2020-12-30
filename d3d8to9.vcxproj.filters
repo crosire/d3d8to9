@@ -29,6 +29,9 @@
     <ClInclude Include="res\resource.h">
       <Filter>resources</Filter>
     </ClInclude>
+    <ClInclude Include="source\d3d8.hpp">
+      <Filter>helpers</Filter>
+    </ClInclude>
     <ClInclude Include="source\d3d8to9.hpp" />
     <ClInclude Include="source\d3d8types.hpp">
       <Filter>helpers</Filter>

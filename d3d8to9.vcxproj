@@ -88,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="res\resource.h" />
+    <ClInclude Include="source\d3d8.hpp" />
     <ClInclude Include="source\d3d8to9.hpp" />
     <ClInclude Include="source\d3d8types.hpp" />
     <ClInclude Include="source\d3dx9.hpp" />

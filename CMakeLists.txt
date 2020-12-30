@@ -3,10 +3,11 @@ cmake_minimum_required(VERSION 3.12)
 project(d3d8to9 CXX)
 
 set(SRCS
-  source/d3d8to9_base.cpp
+  source/d3d8.hpp
   source/d3d8to9.cpp
-  source/d3d8to9_device.cpp
   source/d3d8to9.hpp
+  source/d3d8to9_base.cpp
+  source/d3d8to9_device.cpp
   source/d3d8to9_index_buffer.cpp
   source/d3d8to9_surface.cpp
   source/d3d8to9_swap_chain.cpp
