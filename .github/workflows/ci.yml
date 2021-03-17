@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    paths-ignore:
+      - '.github/*'
+      - '.github/*_TEMPLATE/**'
+      - 'README.md'
+  pull_request:
+    paths-ignore:
+      - '.github/*'
+      - '.github/*_TEMPLATE/**'
+      - 'README.md'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        configuration: [Release, Debug]
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: 1
+    steps:
+    - uses: actions/checkout@v2
+    - uses: microsoft/setup-msbuild@v1
+    - name: Build
+      run: msbuild /m /v:m /p:Configuration=${{ matrix.configuration}} d3d8to9.sln
+    - uses: actions/upload-artifact@v2
+      if: matrix.configuration == 'Release'
+      with:
+        name: d3d8to9
+        path: bin\${{ matrix.configuration }}\d3d8.dll
+        if-no-files-found: error
