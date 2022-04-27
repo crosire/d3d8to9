@@ -25,6 +25,10 @@ Any contributions to the project are welcomed, it's recommended to use GitHub [p
 
 A big shout-out to all the existing [contributors](https://github.com/crosire/d3d8to9/graphs/contributors) who worked on improving compatibility, especially [elishacloud](https://github.com/elishacloud)!
 
+## Disclaimer
+
+This module does direct translation from Driect3D8 to Direct3D9. On modern versions of Windows, depending on system settings, GPU drivers and other factors - the rendering behavior after using d3d8to9 may differ from the one in DirectX 8 mode. One of the most common issues is V-sync enabled with d3d8to9, while inactive in DirectX 8 mode. It may give a false impression of lower performance (FPS) with d3d8to9, while d3d8to9 actually follows the game requests and does not apply undocumented tweaks from the Operating System or graphics driver. If you would like to apply custom tweaks to d3d8to9, such as forcing disabling V-Sync, or enabling Anti-aliasing - it is recommended to use [dxwrapper](https://github.com/elishacloud/dxwrapper) which also uses d3d8to9 for API calls conversion, but additionally allows manual configuration.
+
 ## License
 
 All source code in this repository is licensed under a [BSD 2-clause license](LICENSE.md).
