@@ -5,6 +5,8 @@ d3d8to9
 
 This is a pseudo-driver module that intends to improve compatibility and stability in games using Direct3D 8 for rendering by converting all API calls and low-level shaders to equivalent Direct3D 9 ones. By that it also opens those games to new possibilities from proven modding tools written for Direct3D 9, including [ReShade](http://reshade.me).
 
+Note that d3d8to9 does exact translation from Direct3D 8 to Direct3D 9 only. But on recent versions of Windows, depending on system settings, GPU drivers and other factors, rendering behavior in Direct3D 9 using d3d8to9 may differ from native Direct3D 8. One common issue is VSync getting enabled with d3d8to9, even though it appears inactive in native Direct3D 8, despite the application enabling it. This may give an inaccurate impression of lower performance with d3d8to9, while it actually follows what the application requests. If you want to tweak this behavior, such as forcing VSync to be off, it is recommended to use a separate tool, such as [dxwrapper](https://github.com/elishacloud/dxwrapper), which uses d3d8to9 internally for API call conversion, but adds additional configuration opportunities.
+
 ## Building
 
 You'll need Visual Studio 2013 or higher to build d3d8to9. It is recommended to install the old standalone DirectX end-user runtime, which is required for the D3DX libraries used for disassembling and assembling the shaders.
@@ -24,10 +26,6 @@ A quick overview of what some of the source code files contain:
 Any contributions to the project are welcomed, it's recommended to use GitHub [pull requests](https://help.github.com/articles/using-pull-requests/).
 
 A big shout-out to all the existing [contributors](https://github.com/crosire/d3d8to9/graphs/contributors) who worked on improving compatibility, especially [elishacloud](https://github.com/elishacloud)!
-
-## Disclaimer
-
-This module does direct translation from Driect3D8 to Direct3D9. On modern versions of Windows, depending on system settings, GPU drivers and other factors - the rendering behavior after using d3d8to9 may differ from the one in DirectX 8 mode. One of the most common issues is V-sync enabled with d3d8to9, while inactive in DirectX 8 mode. It may give a false impression of lower performance (FPS) with d3d8to9, while d3d8to9 actually follows the game requests and does not apply undocumented tweaks from the Operating System or graphics driver. If you would like to apply custom tweaks to d3d8to9, such as forcing disabling V-Sync, or enabling Anti-aliasing - it is recommended to use [dxwrapper](https://github.com/elishacloud/dxwrapper) which also uses d3d8to9 for API calls conversion, but additionally allows manual configuration.
 
 ## License
 
