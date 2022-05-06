@@ -5,6 +5,8 @@ d3d8to9
 
 This is a pseudo-driver module that intends to improve compatibility and stability in games using Direct3D 8 for rendering by converting all API calls and low-level shaders to equivalent Direct3D 9 ones. By that it also opens those games to new possibilities from proven modding tools written for Direct3D 9, including [ReShade](http://reshade.me).
 
+Note that d3d8to9 does exact translation from Direct3D 8 to Direct3D 9 only. But on recent versions of Windows, depending on system settings, GPU drivers and other factors, rendering behavior in Direct3D 9 using d3d8to9 may differ from native Direct3D 8. One common issue is VSync getting enabled with d3d8to9, even though it appears inactive in native Direct3D 8, despite the application enabling it. This may give an inaccurate impression of lower performance with d3d8to9, while it actually follows what the application requests. If you want to tweak this behavior, such as forcing VSync to be off, it is recommended to use a separate tool, such as [dxwrapper](https://github.com/elishacloud/dxwrapper), which uses d3d8to9 internally for API call conversion, but adds additional configuration opportunities.
+
 ## Building
 
 You'll need Visual Studio 2013 or higher to build d3d8to9. It is recommended to install the old standalone DirectX end-user runtime, which is required for the D3DX libraries used for disassembling and assembling the shaders.
