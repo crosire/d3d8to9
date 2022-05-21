@@ -1,6 +1,5 @@
 // Microsoft Visual C++ generated resource script.
 //
-
 #include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -53,7 +52,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,11,0,0
+ FILEVERSION 1,11,1,0
  PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -71,7 +70,7 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "crosire"
             VALUE "FileDescription", "d3d8to9"
-            VALUE "FileVersion", "1.11.0.0"
+            VALUE "FileVersion", "1.11.1.0"
             VALUE "LegalCopyright", "Copyright © 2015. All rights reserved."
             VALUE "OriginalFilename", "d3d8.dll"
             VALUE "ProductName", "ReShade"
