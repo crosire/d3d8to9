@@ -131,7 +131,7 @@ void ConvertPresentParameters(D3DPRESENT_PARAMETERS8 &Input, D3DPRESENT_PARAMETE
 	Output.Flags = Input.Flags;
 
 	// MultiSampleType must be D3DMULTISAMPLE_NONE unless SwapEffect has been set to D3DSWAPEFFECT_DISCARD or if there is a lockable backbuffer
-	if (Output.SwapEffect != D3DSWAPEFFECT_DISCARD || (Output.Flags & D3DPRESENTFLAG_LOCKABLE_BACKBUFFER))
+	if (Input.SwapEffect != D3DSWAPEFFECT_DISCARD || (Input.Flags & D3DPRESENTFLAG_LOCKABLE_BACKBUFFER))
 	{
 		Output.MultiSampleType = D3DMULTISAMPLE_NONE;
 	}
@@ -139,33 +139,40 @@ void ConvertPresentParameters(D3DPRESENT_PARAMETERS8 &Input, D3DPRESENT_PARAMETE
 	if (Input.Windowed)
 	{
 		Output.FullScreen_RefreshRateInHz = 0;
+
 		// D3D8 always presents without waiting for vblank when windowed
 		Output.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	}
 	else
 	{
+		Output.FullScreen_RefreshRateInHz = Input.FullScreen_RefreshRateInHz;
+
 		// D3DPRESENT_RATE_UNLIMITED is no longer supported in D3D9
 		if (Input.FullScreen_RefreshRateInHz == D3DPRESENT_RATE_UNLIMITED)
 		{
 			Output.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
 		}
-		else
-		{
-			Output.FullScreen_RefreshRateInHz = Input.FullScreen_RefreshRateInHz;
-		}
 
-		// D3DPRESENT_INTERVAL_DEFAULT is equivalent to D3DPRESENT_INTERVAL_ONE in D3D9
 		Output.PresentationInterval = Input.FullScreen_PresentationInterval;
 	}
 
 	// D3DSWAPEFFECT_COPY_VSYNC is no longer supported in D3D9
-	if (Output.SwapEffect == D3DSWAPEFFECT_COPY_VSYNC)
+	if (Input.SwapEffect == D3DSWAPEFFECT_COPY_VSYNC)
 	{
-		Output.SwapEffect  = D3DSWAPEFFECT_COPY;
+		Output.SwapEffect = D3DSWAPEFFECT_COPY;
+
 		// Need to wait for vblank before copying (both when windowed and full-screen)
-		if (Output.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE)
+		if (Input.Windowed)
 		{
-			Output.PresentationInterval  = D3DPRESENT_INTERVAL_ONE;
+			Output.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+		}
+		else
+		{
+			// As per documentation the D3DPRESENT_INTERVAL_IMMEDIATE flag is meaningless when used in conjunction with D3DSWAPEFFECT_COPY_VSYNC
+			if (Input.FullScreen_PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE)
+			{
+				Output.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+			}
 		}
 	}
 }

@@ -59,9 +59,9 @@ extern "C" IDirect3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
 			LOG << "Failed to load d3dx9_43.dll! Some features will not work correctly." << std::endl;
 #endif
 			if (MessageBox(nullptr, TEXT(
-				"Failed to load d3dx9_43.dll! Some features will not work correctly.\n\n"
-				"It's required to install the \"Microsoft DirectX End-User Runtime\" in order to use d3d8to9.\n\n"
-				"Please click \"OK\" to open the official download page or \"CANCEL\" to continue anyway."), nullptr, MB_ICONWARNING | MB_TOPMOST | MB_SETFOREGROUND | MB_OKCANCEL | MB_DEFBUTTON1) == IDOK)
+					"Failed to load d3dx9_43.dll! Some features will not work correctly.\n\n"
+					"It's required to install the \"Microsoft DirectX End-User Runtime\" in order to use d3d8to9.\n\n"
+					"Please click \"Ok\" to open the official download page or \"CANCEL\" to continue anyway."), nullptr, MB_ICONWARNING | MB_TOPMOST | MB_SETFOREGROUND | MB_OKCANCEL | MB_DEFBUTTON1) == IDOK)
 			{
 				ShellExecute(nullptr, TEXT("open"), TEXT("https://www.microsoft.com/download/details.aspx?id=35"), nullptr, nullptr, SW_SHOW);
 
