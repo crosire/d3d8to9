@@ -73,6 +73,7 @@ static UINT CalcTextureSize(UINT Width, UINT Height, UINT Depth, D3DFORMAT Forma
 			return ((Width + 3) >> 2) * ((Height + 3) >> 2) * 16;
 	}
 }
+
 void ConvertCaps(D3DCAPS9 &Input, D3DCAPS8 &Output)
 {
 	CopyMemory(&Output, &Input, sizeof(Output));
@@ -90,6 +91,7 @@ void ConvertCaps(D3DCAPS9 &Input, D3DCAPS8 &Output)
 	// D3D8 can only handle up to 256 for MaxVertexShaderConst
 	Output.MaxVertexShaderConst = std::min(256ul, Input.MaxVertexShaderConst);
 }
+
 void ConvertVolumeDesc(D3DVOLUME_DESC &Input, D3DVOLUME_DESC8 &Output)
 {
 	Output.Format = Input.Format;
@@ -112,6 +114,7 @@ void ConvertSurfaceDesc(D3DSURFACE_DESC &Input, D3DSURFACE_DESC8 &Output)
 	Output.Width = Input.Width;
 	Output.Height = Input.Height;
 }
+
 void ConvertPresentParameters(D3DPRESENT_PARAMETERS8 &Input, D3DPRESENT_PARAMETERS &Output)
 {
 	Output.BackBufferWidth = Input.BackBufferWidth;
