@@ -661,7 +661,22 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetMaterial(D3DMATERIAL8 *pMaterial)
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetLight(DWORD Index, const D3DLIGHT8 *pLight)
 {
-	return ProxyInterface->SetLight(Index, pLight);
+	if (pLight == nullptr)
+		return D3DERR_INVALIDCALL;
+
+	D3DLIGHT8 Light = *pLight;
+
+	// Make spot light work more like it did in Direct3D 8
+	if (Light.Type == D3DLIGHTTYPE::D3DLIGHT_SPOT)
+	{
+		// Theta must be in the range from 0 through the value specified by Phi
+		if (Light.Theta <= Light.Phi)
+		{
+			Light.Theta /= 1.75f;
+		}
+	}
+
+	return ProxyInterface->SetLight(Index, &Light);
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetLight(DWORD Index, D3DLIGHT8 *pLight)
 {
