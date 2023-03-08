@@ -1,16 +1,29 @@
 # Build results
-[Bb]in/
-[Oo]bj/
+bin/
+obj/
+intermediate/
 [Bb]uild/
-[Dd]ebug/
-[Rr]elease/
+Debug/
+Release/
 
 # Visual Studio cache files
+.vs/
 ipch/
 *.aps
 *.VC.db
 *.VC.opendb
+
+# Visual Studio user config files
 *.sdf
 *.opensdf
 *.suo
-*.user
+*.vcxproj.user
+*.Args.json
+*.ArgsCfg.json
+
+# Visual Studio Code
+.vscode/
+
+# Temporary OS files
+.DS_Store
+Thumbs.db

@@ -3,10 +3,11 @@ cmake_minimum_required(VERSION 3.12)
 project(d3d8to9 CXX)
 
 set(SRCS
-  source/d3d8to9_base.cpp
+  source/d3d8.hpp
   source/d3d8to9.cpp
-  source/d3d8to9_device.cpp
   source/d3d8to9.hpp
+  source/d3d8to9_base.cpp
+  source/d3d8to9_device.cpp
   source/d3d8to9_index_buffer.cpp
   source/d3d8to9_surface.cpp
   source/d3d8to9_swap_chain.cpp
@@ -18,6 +19,7 @@ set(SRCS
   source/d3dx9.hpp
   source/interface_query.cpp
   source/interface_query.hpp
+  res/d3d8to9.rc
 )
 
 set(CMAKE_CXX_STANDARD 17)
@@ -41,8 +43,10 @@ target_compile_definitions(d3d8to9 PUBLIC
 
 if(MSVC)
   target_compile_options(d3d8to9 PRIVATE /W3)
+  target_link_options(d3d8to9 PRIVATE /DEF:${CMAKE_CURRENT_SOURCE_DIR}/res/d3d8.def)
 else()
   target_compile_options(d3d8to9 PRIVATE -Wall -Wno-delete-non-virtual-dtor -Wno-unknown-pragmas)
+  target_link_options(d3d8to9 PRIVATE -Wl,--enable-stdcall-fixup ${CMAKE_CURRENT_SOURCE_DIR}/res/d3d8.def)
 endif()
 
 target_link_libraries(d3d8to9 d3d9)
