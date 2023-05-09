@@ -727,8 +727,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderState(D3DRENDERSTATETYPE Sta
 			ClipPlaneRenderState = Value;
 		return hr;
 	case D3DRS_ZBIAS:
-		Biased = static_cast<FLOAT>(Value) * -0.000005f;
-		memcpy(&Value, &Biased, sizeof(Value));
+		Biased = static_cast<FLOAT>(Value) * 0.000005f;
+		Value = *reinterpret_cast<const DWORD*>(&Biased);
 		State = D3DRS_DEPTHBIAS;
 	default:
 		return ProxyInterface->SetRenderState(State, Value);
@@ -753,7 +753,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetRenderState(D3DRENDERSTATETYPE Sta
 		return ProxyInterface->GetRenderState(D3DRS_ANTIALIASEDLINEENABLE, pValue);
 	case D3DRS_ZBIAS:
 		hr = ProxyInterface->GetRenderState(D3DRS_DEPTHBIAS, pValue);
-		*pValue = static_cast<DWORD>(*reinterpret_cast<const FLOAT *>(pValue) * -500000.0f);
+		*pValue = static_cast<DWORD>(*reinterpret_cast<const FLOAT*>(pValue) * 200000.0f);
 		return hr;
 	case D3DRS_SOFTWAREVERTEXPROCESSING:
 		*pValue = ProxyInterface->GetSoftwareVertexProcessing();
