@@ -1526,7 +1526,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteVertexShader(DWORD Handle)
 	const DWORD HandleMagic = Handle << 1;
 	VertexShaderInfo *const ShaderInfo = reinterpret_cast<VertexShaderInfo *>(HandleMagic);
 
-	if (ShaderInfo->Shader != nullptr) {
+	if (ShaderInfo->Shader != nullptr) 
+	{
 		ShaderInfo->Shader->Release();
 		VertexShaderHandles.erase(reinterpret_cast<DWORD>(ShaderInfo->Shader));
 	}
