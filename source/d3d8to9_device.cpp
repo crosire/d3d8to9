@@ -51,6 +51,10 @@ ULONG STDMETHODCALLTYPE Direct3DDevice8::AddRef()
 }
 ULONG STDMETHODCALLTYPE Direct3DDevice8::Release()
 {
+	// Shaders are destroyed alongside the device that created them in D3D8 but not in D3D9
+	// so we Release all the shaders when the device releases to mirror that behaviour
+	ReleaseShaders();
+
 	ULONG LastRefCount = ProxyInterface->Release();
 
 	if (LastRefCount == 0)
@@ -195,6 +199,10 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::Reset(D3DPRESENT_PARAMETERS8 *pPresen
 			PresentParams.MultiSampleQuality = (QualityLevels != 0) ? QualityLevels - 1 : 0;
 		}
 	}
+
+	// Shaders are destroyed alongside the device that created them in D3D8 but not in D3D9
+	// so we Release all the shaders when the device releases to mirror that behaviour
+	ReleaseShaders();
 
 	return ProxyInterface->Reset(&PresentParams);
 }
@@ -1436,6 +1444,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 
 		if (SUCCEEDED(hr))
 		{
+			// Store the shader handle before it's bit-manipulated
+			VertexShaderHandles.insert(reinterpret_cast<DWORD>(ShaderInfo->Shader));
+			
 			// Since 'Shader' is at least 8 byte aligned, we can safely shift it to right and end up not overwriting the top bit
 			assert((reinterpret_cast<DWORD>(ShaderInfo) & 1) == 0);
 			const DWORD ShaderMagic = reinterpret_cast<DWORD>(ShaderInfo) >> 1;
@@ -1515,8 +1526,10 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteVertexShader(DWORD Handle)
 	const DWORD HandleMagic = Handle << 1;
 	VertexShaderInfo *const ShaderInfo = reinterpret_cast<VertexShaderInfo *>(HandleMagic);
 
-	if (ShaderInfo->Shader != nullptr)
+	if (ShaderInfo->Shader != nullptr) {
 		ShaderInfo->Shader->Release();
+		VertexShaderHandles.erase(reinterpret_cast<DWORD>(ShaderInfo->Shader));
+	}
 	if (ShaderInfo->Declaration != nullptr)
 		ShaderInfo->Declaration->Release();
 
@@ -2054,6 +2067,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 #ifndef D3D8TO9NOLOG
 		LOG << "> 'IDirect3DDevice9::CreatePixelShader' failed with error code " << std::hex << hr << std::dec << "!" << std::endl;
 #endif
+
+		PixelShaderHandles.insert(*pHandle);
 	}
 
 	return hr;
@@ -2082,6 +2097,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeletePixelShader(DWORD Handle)
 		SetPixelShader(0);
 
 	reinterpret_cast<IDirect3DPixelShader9 *>(Handle)->Release();
+
+	PixelShaderHandles.erase(Handle);
 
 	return D3D_OK;
 }
@@ -2133,4 +2150,22 @@ void Direct3DDevice8::ApplyClipPlanes()
 
 		index++;
 	}
+}
+
+template <typename T> void ReleaseShaderSet(std::unordered_set<DWORD>& ShaderHandles) {
+	for (auto Handle : ShaderHandles)
+	{
+		if (Handle == 0)
+			continue;
+		reinterpret_cast<T>(Handle)->Release();
+	}
+	ShaderHandles.clear();
+}
+
+void Direct3DDevice8::ReleaseShaders()
+{
+	ReleaseShaderSet<IDirect3DPixelShader9*>(PixelShaderHandles);
+	SetPixelShader(0);
+	ReleaseShaderSet<IDirect3DVertexShader9*>(VertexShaderHandles);
+	SetVertexShader(0);
 }
