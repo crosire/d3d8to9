@@ -177,6 +177,7 @@ private:
 
 	// Store Shader Handles so they can be destroyed later to mirror D3D8 behavior 
 	std::unordered_set<DWORD> PixelShaderHandles, VertexShaderHandles;
+	unsigned int VertexShaderAndDeclarationCount = 0;
 };
 
 class Direct3DSwapChain8 : public IDirect3DSwapChain8, public AddressLookupTableObject

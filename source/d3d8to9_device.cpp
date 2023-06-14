@@ -49,13 +49,20 @@ ULONG STDMETHODCALLTYPE Direct3DDevice8::AddRef()
 {
 	return ProxyInterface->AddRef();
 }
+
 ULONG STDMETHODCALLTYPE Direct3DDevice8::Release()
 {
+	ULONG LastRefCount = ProxyInterface->Release();
+
 	// Shaders are destroyed alongside the device that created them in D3D8 but not in D3D9
 	// so we Release all the shaders when the device releases to mirror that behaviour
-	ReleaseShaders();
-
-	ULONG LastRefCount = ProxyInterface->Release();
+	if (LastRefCount !=0 && LastRefCount == (VertexShaderAndDeclarationCount + PixelShaderHandles.size()))
+	{
+		ProxyInterface->AddRef();
+		ReleaseShaders();
+		LastRefCount = ProxyInterface->Release();
+		assert(LastRefCount == 0);
+	}
 
 	if (LastRefCount == 0)
 		delete this;
@@ -1427,6 +1434,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 		ShaderInfo = new VertexShaderInfo();
 
 		hr = ProxyInterface->CreateVertexShader(static_cast<const DWORD *>(Assembly->GetBufferPointer()), &ShaderInfo->Shader);
+		VertexShaderAndDeclarationCount++;
 
 		Assembly->Release();
 	}
@@ -1445,21 +1453,27 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 		if (SUCCEEDED(hr))
 		{
 			// Store the shader handle before it's bit-manipulated
-			VertexShaderHandles.insert(reinterpret_cast<DWORD>(ShaderInfo->Shader));
+			
 			
 			// Since 'Shader' is at least 8 byte aligned, we can safely shift it to right and end up not overwriting the top bit
 			assert((reinterpret_cast<DWORD>(ShaderInfo) & 1) == 0);
 			const DWORD ShaderMagic = reinterpret_cast<DWORD>(ShaderInfo) >> 1;
 
 			*pHandle = ShaderMagic | 0x80000000;
+
+			VertexShaderHandles.insert(*pHandle);
+			VertexShaderAndDeclarationCount++;
 		}
 		else
 		{
 #ifndef D3D8TO9NOLOG
 			LOG << "> 'IDirect3DDevice9::CreateVertexDeclaration' failed with error code " << std::hex << hr << std::dec << "!" << std::endl;
 #endif
-			if (ShaderInfo->Shader != nullptr)
+			if (ShaderInfo->Shader != nullptr) 
+			{
 				ShaderInfo->Shader->Release();
+				VertexShaderAndDeclarationCount--;
+			}
 		}
 	}
 	else
@@ -1520,6 +1534,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteVertexShader(DWORD Handle)
 	if ((Handle & 0x80000000) == 0)
 		return D3DERR_INVALIDCALL;
 
+	VertexShaderHandles.erase(Handle);
+
 	if (CurrentVertexShaderHandle == Handle)
 		SetVertexShader(0);
 
@@ -1529,10 +1545,13 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteVertexShader(DWORD Handle)
 	if (ShaderInfo->Shader != nullptr) 
 	{
 		ShaderInfo->Shader->Release();
-		VertexShaderHandles.erase(reinterpret_cast<DWORD>(ShaderInfo->Shader));
+		VertexShaderAndDeclarationCount--;
 	}
 	if (ShaderInfo->Declaration != nullptr)
+	{
 		ShaderInfo->Declaration->Release();
+		VertexShaderAndDeclarationCount--;
+	}
 
 	delete ShaderInfo;
 
@@ -2068,7 +2087,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 #ifndef D3D8TO9NOLOG
 		LOG << "> 'IDirect3DDevice9::CreatePixelShader' failed with error code " << std::hex << hr << std::dec << "!" << std::endl;
 #endif
-
+	}
+	else
+	{
 		PixelShaderHandles.insert(*pHandle);
 	}
 
@@ -2153,20 +2174,17 @@ void Direct3DDevice8::ApplyClipPlanes()
 	}
 }
 
-template <typename T> void ReleaseShaderSet(std::unordered_set<DWORD>& ShaderHandles) {
-	for (auto Handle : ShaderHandles)
-	{
-		if (Handle == 0)
-			continue;
-		reinterpret_cast<T>(Handle)->Release();
-	}
-	ShaderHandles.clear();
-}
-
 void Direct3DDevice8::ReleaseShaders()
 {
-	ReleaseShaderSet<IDirect3DPixelShader9*>(PixelShaderHandles);
-	SetPixelShader(0);
-	ReleaseShaderSet<IDirect3DVertexShader9*>(VertexShaderHandles);
-	SetVertexShader(0);
+	for (auto Handle : PixelShaderHandles)
+	{
+		DeletePixelShader(Handle);
+	}
+	PixelShaderHandles.clear();
+	for (auto Handle : VertexShaderHandles)
+	{
+		DeleteVertexShader(Handle);
+	}
+	VertexShaderHandles.clear();
+	VertexShaderAndDeclarationCount = 0;
 }
