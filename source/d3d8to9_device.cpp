@@ -207,10 +207,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::Reset(D3DPRESENT_PARAMETERS8 *pPresen
 		}
 	}
 
-	// Shaders are destroyed alongside the device that created them in D3D8 but not in D3D9
-	// so we Release all the shaders when the device releases to mirror that behaviour
-	ReleaseShaders();
-
 	return ProxyInterface->Reset(&PresentParams);
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
