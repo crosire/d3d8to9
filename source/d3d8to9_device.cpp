@@ -2016,6 +2016,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 			{
 				SourceCode = NewSourceCode;
 				Assembly->Release();
+				Assembly = nullptr;
 			}
 			else
 			{
@@ -2029,6 +2030,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 					LOG << "> Failed to reassemble shader:" << std::endl << std::endl << static_cast<const char*>(ErrorBuffer->GetBufferPointer()) << std::endl;
 #endif
 					ErrorBuffer->Release();
+					ErrorBuffer = nullptr;
 				}
 			}
 		}
