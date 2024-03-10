@@ -2009,7 +2009,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 		NewSourceCode.insert(PhasePosition, "    phase\n");
 
 		// If no errors were encountered then check if code assembles
-		if (!ConvertError)
+		if (!ConvertError && D3DXAssembleShader != nullptr)
 		{
 			// Test if ps_1_4 assembles
 			if (SUCCEEDED(D3DXAssembleShader(NewSourceCode.data(), static_cast<UINT>(NewSourceCode.size()), nullptr, nullptr, 0, &Assembly, &ErrorBuffer)))
