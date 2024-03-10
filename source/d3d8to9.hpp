@@ -6,6 +6,7 @@
 #pragma once
 
 #include <vector>
+#include <unordered_set>
 #include "d3d8.hpp"
 #include "interface_query.hpp"
 
@@ -160,6 +161,7 @@ public:
 
 private:
 	void ApplyClipPlanes();
+	void ReleaseShaders();
 
 	Direct3D8 *const D3D;
 	IDirect3DDevice9 *const ProxyInterface;
@@ -172,6 +174,10 @@ private:
 	static constexpr size_t MAX_CLIP_PLANES = 6;
 	float StoredClipPlanes[MAX_CLIP_PLANES][4] = {};
 	DWORD ClipPlaneRenderState = 0;
+
+	// Store Shader Handles so they can be destroyed later to mirror D3D8 behavior 
+	std::unordered_set<DWORD> PixelShaderHandles, VertexShaderHandles;
+	unsigned int VertexShaderAndDeclarationCount = 0;
 };
 
 class Direct3DSwapChain8 : public IDirect3DSwapChain8, public AddressLookupTableObject
