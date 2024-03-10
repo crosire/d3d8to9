@@ -2015,14 +2015,21 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 			if (SUCCEEDED(D3DXAssembleShader(NewSourceCode.data(), static_cast<UINT>(NewSourceCode.size()), nullptr, nullptr, 0, &Assembly, &ErrorBuffer)))
 			{
 				SourceCode = NewSourceCode;
+				Assembly->Release();
 			}
 			else
 			{
 #ifndef D3D8TO9NOLOG
 				LOG << "> Failed to convert shader to ps_1_4" << std::endl;
 				LOG << "> Dumping translated shader assembly:" << std::endl << std::endl << NewSourceCode << std::endl;
-				LOG << "> Failed to reassemble shader:" << std::endl << std::endl << static_cast<const char *>(ErrorBuffer->GetBufferPointer()) << std::endl;
 #endif
+				if (ErrorBuffer != nullptr)
+				{
+#ifndef D3D8TO9NOLOG
+					LOG << "> Failed to reassemble shader:" << std::endl << std::endl << static_cast<const char*>(ErrorBuffer->GetBufferPointer()) << std::endl;
+#endif
+					ErrorBuffer->Release();
+				}
 			}
 		}
 	}
@@ -2077,6 +2084,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 	}
 
 	hr = ProxyInterface->CreatePixelShader(static_cast<const DWORD *>(Assembly->GetBufferPointer()), reinterpret_cast<IDirect3DPixelShader9 **>(pHandle));
+
+	Assembly->Release();
 
 	if (FAILED(hr))
 	{
