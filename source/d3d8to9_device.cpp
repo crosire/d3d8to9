@@ -895,6 +895,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetTexture(DWORD Stage, IDirect3DBase
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD *pValue)
 {
+	HRESULT hr;
 	switch (static_cast<DWORD>(Type))
 	{
 	case D3DTSS_ADDRESSU:
@@ -906,7 +907,15 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetTextureStageState(DWORD Stage, D3D
 	case D3DTSS_BORDERCOLOR:
 		return ProxyInterface->GetSamplerState(Stage, D3DSAMP_BORDERCOLOR, pValue);
 	case D3DTSS_MAGFILTER:
-		return ProxyInterface->GetSamplerState(Stage, D3DSAMP_MAGFILTER, pValue);
+		hr = ProxyInterface->GetSamplerState(Stage, D3DSAMP_MAGFILTER, pValue);
+		if (SUCCEEDED(hr) && pValue)
+		{
+			if (*pValue == D3DTEXF_PYRAMIDALQUAD)
+				*pValue = D3DTEXF_FLATCUBIC;
+			else if (*pValue == D3DTEXF_GAUSSIANQUAD)
+				*pValue = D3DTEXF_GAUSSIANCUBIC;
+		}
+		return hr;
 	case D3DTSS_MINFILTER:
 		return ProxyInterface->GetSamplerState(Stage, D3DSAMP_MINFILTER, pValue);
 	case D3DTSS_MIPFILTER:
@@ -934,6 +943,10 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetTextureStageState(DWORD Stage, D3D
 	case D3DTSS_BORDERCOLOR:
 		return ProxyInterface->SetSamplerState(Stage, D3DSAMP_BORDERCOLOR, Value);
 	case D3DTSS_MAGFILTER:
+		if (Value == D3DTEXF_FLATCUBIC)
+			Value = D3DTEXF_PYRAMIDALQUAD;
+		else if (Value == D3DTEXF_GAUSSIANCUBIC)
+			Value = D3DTEXF_GAUSSIANQUAD;
 		return ProxyInterface->SetSamplerState(Stage, D3DSAMP_MAGFILTER, Value);
 	case D3DTSS_MINFILTER:
 		return ProxyInterface->SetSamplerState(Stage, D3DSAMP_MINFILTER, Value);
