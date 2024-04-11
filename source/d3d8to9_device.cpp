@@ -934,6 +934,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetTextureStageState(DWORD Stage, D3D
 	case D3DTSS_BORDERCOLOR:
 		return ProxyInterface->SetSamplerState(Stage, D3DSAMP_BORDERCOLOR, Value);
 	case D3DTSS_MAGFILTER:
+		if (Value == D3DTEXF_FLATCUBIC || Value == D3DTEXF_GAUSSIANCUBIC)
+			Value = D3DTEXF_LINEAR;
 		return ProxyInterface->SetSamplerState(Stage, D3DSAMP_MAGFILTER, Value);
 	case D3DTSS_MINFILTER:
 		return ProxyInterface->SetSamplerState(Stage, D3DSAMP_MINFILTER, Value);
