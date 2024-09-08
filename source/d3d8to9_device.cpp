@@ -652,7 +652,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetViewport(const D3DVIEWPORT8 *pView
 	{
 		D3DSURFACE_DESC Desc;
 
-		if (SUCCEEDED(pCurrentRenderTarget->GetDesc(&Desc)) && (pViewport->Height > Desc.Height || pViewport->Width > Desc.Width))
+		if (SUCCEEDED(pCurrentRenderTarget->GetDesc(&Desc)) && (pViewport->Y + pViewport->Height > Desc.Height || pViewport->X + pViewport->Width > Desc.Width))
 			return D3DERR_INVALIDCALL;
 	}
 
