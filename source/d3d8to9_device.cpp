@@ -851,14 +851,17 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetTexture(DWORD Stage, IDirect3DBase
 		case D3DRTYPE_TEXTURE:
 			BaseTextureInterface->QueryInterface(IID_PPV_ARGS(&TextureInterface));
 			*ppTexture = ProxyAddressLookupTable->FindAddress<Direct3DTexture8>(TextureInterface);
+			TextureInterface->Release();
 			break;
 		case D3DRTYPE_VOLUMETEXTURE:
 			BaseTextureInterface->QueryInterface(IID_PPV_ARGS(&VolumeTextureInterface));
 			*ppTexture = ProxyAddressLookupTable->FindAddress<Direct3DVolumeTexture8>(VolumeTextureInterface);
+			VolumeTextureInterface->Release();
 			break;
 		case D3DRTYPE_CUBETEXTURE:
 			BaseTextureInterface->QueryInterface(IID_PPV_ARGS(&CubeTextureInterface));
 			*ppTexture = ProxyAddressLookupTable->FindAddress<Direct3DCubeTexture8>(CubeTextureInterface);
+			CubeTextureInterface->Release();
 			break;
 		default:
 			return D3DERR_INVALIDCALL;
