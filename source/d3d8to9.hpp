@@ -161,7 +161,7 @@ public:
 
 private:
 	void ApplyClipPlanes();
-	void ReleaseShaders();
+	void ReleaseShadersAndStateBlocks();
 
 	Direct3D8 *const D3D;
 	IDirect3DDevice9 *const ProxyInterface;
@@ -175,8 +175,8 @@ private:
 	float StoredClipPlanes[MAX_CLIP_PLANES][4] = {};
 	DWORD ClipPlaneRenderState = 0;
 
-	// Store Shader Handles so they can be destroyed later to mirror D3D8 behavior 
-	std::unordered_set<DWORD> PixelShaderHandles, VertexShaderHandles;
+	// Store Shader Handles and State Block Tokens so they can be destroyed later to mirror D3D8 behavior
+	std::unordered_set<DWORD> PixelShaderHandles, VertexShaderHandles, StateBlockTokens;
 	unsigned int VertexShaderAndDeclarationCount = 0;
 };
 
