@@ -56,10 +56,10 @@ ULONG STDMETHODCALLTYPE Direct3DDevice8::Release()
 
 	// Shaders are destroyed alongside the device that created them in D3D8 but not in D3D9
 	// so we Release all the shaders when the device releases to mirror that behaviour
-	if (LastRefCount !=0 && LastRefCount == (VertexShaderAndDeclarationCount + PixelShaderHandles.size()))
+	if (LastRefCount != 0 && LastRefCount == (VertexShaderAndDeclarationCount + PixelShaderHandles.size() + StateBlockTokens.size()))
 	{
 		ProxyInterface->AddRef();
-		ReleaseShaders();
+		ReleaseShadersAndStateBlocks();
 		LastRefCount = ProxyInterface->Release();
 		assert(LastRefCount == 0);
 	}
@@ -783,7 +783,12 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::EndStateBlock(DWORD *pToken)
 	if (pToken == nullptr)
 		return D3DERR_INVALIDCALL;
 
-	return ProxyInterface->EndStateBlock(reinterpret_cast<IDirect3DStateBlock9 **>(pToken));
+	HRESULT hr = ProxyInterface->EndStateBlock(reinterpret_cast<IDirect3DStateBlock9 **>(pToken));
+
+	if (SUCCEEDED(hr))
+		StateBlockTokens.insert(*pToken);
+
+	return hr;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::ApplyStateBlock(DWORD Token)
 {
@@ -806,6 +811,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteStateBlock(DWORD Token)
 
 	reinterpret_cast<IDirect3DStateBlock9 *>(Token)->Release();
 
+	StateBlockTokens.erase(Token);
+
 	return D3D_OK;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateStateBlock(D3DSTATEBLOCKTYPE Type, DWORD *pToken)
@@ -817,7 +824,12 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateStateBlock(D3DSTATEBLOCKTYPE Ty
 	if (pToken == nullptr)
 		return D3DERR_INVALIDCALL;
 
-	return ProxyInterface->CreateStateBlock(Type, reinterpret_cast<IDirect3DStateBlock9 **>(pToken));
+	HRESULT hr = ProxyInterface->CreateStateBlock(Type, reinterpret_cast<IDirect3DStateBlock9 **>(pToken));
+
+	if (SUCCEEDED(hr))
+		StateBlockTokens.insert(*pToken);
+
+	return hr;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetClipStatus(const D3DCLIPSTATUS8 *pClipStatus)
 {
@@ -2181,7 +2193,7 @@ void Direct3DDevice8::ApplyClipPlanes()
 	}
 }
 
-void Direct3DDevice8::ReleaseShaders()
+void Direct3DDevice8::ReleaseShadersAndStateBlocks()
 {
 	for (auto Handle : PixelShaderHandles)
 	{
@@ -2194,4 +2206,9 @@ void Direct3DDevice8::ReleaseShaders()
 	}
 	VertexShaderHandles.clear();
 	VertexShaderAndDeclarationCount = 0;
+	for (auto Token : StateBlockTokens)
+	{
+		DeleteStateBlock(Token);
+	}
+	StateBlockTokens.clear();
 }
