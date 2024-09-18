@@ -414,14 +414,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateImageSurface(UINT Width, UINT H
 
 	*ppSurface = nullptr;
 
-	if (Format == D3DFMT_R8G8B8)
-	{
-#ifndef D3D8TO9NOLOG
-		LOG << "> Replacing format 'D3DFMT_R8G8B8' with 'D3DFMT_X8R8G8B8' ..." << std::endl;
-#endif
-		Format = D3DFMT_X8R8G8B8;
-	}
-
 	IDirect3DSurface9 *SurfaceInterface = nullptr;
 
 	const HRESULT hr = ProxyInterface->CreateOffscreenPlainSurface(Width, Height, Format, D3DPOOL_SYSTEMMEM, &SurfaceInterface, nullptr);
