@@ -445,6 +445,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CopyRects(IDirect3DSurface8 *pSourceS
 	if (SourceDesc.Format != DestinationDesc.Format)
 		return D3DERR_INVALIDCALL;
 
+	if (IsDepthStencil(SourceDesc.Format))
+		return D3DERR_INVALIDCALL;
+
 	HRESULT hr = D3DERR_INVALIDCALL;
 
 	if (cRects == 0)
