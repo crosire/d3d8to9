@@ -971,15 +971,72 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::ValidateDevice(DWORD *pNumPasses)
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetInfo(DWORD DevInfoID, void *pDevInfoStruct, DWORD DevInfoStructSize)
 {
-	UNREFERENCED_PARAMETER(DevInfoID);
-	UNREFERENCED_PARAMETER(pDevInfoStruct);
-	UNREFERENCED_PARAMETER(DevInfoStructSize);
-
 #ifndef D3D8TO9NOLOG
 	LOG << "Redirecting '" << "IDirect3DDevice8::GetInfo" << "(" << this << ", " << DevInfoID << ", " << pDevInfoStruct << ", " << DevInfoStructSize << ")' ..." << std::endl;
 #endif
 
-	return S_FALSE;
+	if (pDevInfoStruct == nullptr || DevInfoStructSize == 0)
+		return D3DERR_INVALIDCALL;
+
+	HRESULT hr;
+	IDirect3DQuery9 *pQuery = nullptr;
+
+	switch (DevInfoID)
+	{
+		case 0:
+		case D3DDEVINFOID_TEXTUREMANAGER:
+		case D3DDEVINFOID_D3DTEXTUREMANAGER:
+		case D3DDEVINFOID_TEXTURING:
+			return E_FAIL; // Unsupported query IDs
+
+		case D3DDEVINFOID_VCACHE:
+			hr = ProxyInterface->CreateQuery(D3DQUERYTYPE_VCACHE, &pQuery);
+
+			if (FAILED(hr))
+			{
+				if (DevInfoStructSize != sizeof(D3DDEVINFO_VCACHE))
+					return D3DERR_INVALIDCALL;
+
+				// The contents of pDevInfoStruct are zeroed before return
+				memset(pDevInfoStruct, 0, sizeof(D3DDEVINFO_VCACHE));
+				return S_FALSE;
+			}
+
+			break;
+
+		case D3DDEVINFOID_RESOURCEMANAGER:
+			hr = ProxyInterface->CreateQuery(D3DQUERYTYPE_RESOURCEMANAGER, &pQuery);
+			break;
+
+		case D3DDEVINFOID_VERTEXSTATS:
+			hr = ProxyInterface->CreateQuery(D3DQUERYTYPE_VERTEXSTATS, &pQuery);
+			break;
+
+		default: // D3DDEVINFOID_UNKNOWN
+			return E_FAIL;
+	}
+
+	if ((FAILED(hr)))
+	{
+		if (hr == D3DERR_NOTAVAILABLE)
+		{
+			return E_FAIL;
+		}
+		else
+		{
+			return S_FALSE;
+		}
+	}
+
+	if (pQuery != nullptr)
+	{
+		pQuery->Issue(D3DISSUE_END);
+		hr = pQuery->GetData(pDevInfoStruct, DevInfoStructSize, D3DGETDATA_FLUSH);
+
+		pQuery->Release();
+	}
+
+	return hr;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetPaletteEntries(UINT PaletteNumber, const PALETTEENTRY *pEntries)
 {
