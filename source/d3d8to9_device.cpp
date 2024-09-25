@@ -47,21 +47,27 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::QueryInterface(REFIID riid, void **pp
 }
 ULONG STDMETHODCALLTYPE Direct3DDevice8::AddRef()
 {
-	return ProxyInterface->AddRef();
+	ULONG LastRefCount = ProxyInterface->AddRef();
+
+	// Shaders and state blocks increase ref counter in d3d9 but not in d3d8
+	DWORD ExtraRefs = StateBlockCount + PixelShaderCount + VertexShaderAndDeclarationCount;
+	if (ExtraRefs <= LastRefCount)
+	{
+		LastRefCount = LastRefCount - ExtraRefs;
+	}
+
+	return LastRefCount;
 }
 
 ULONG STDMETHODCALLTYPE Direct3DDevice8::Release()
 {
 	ULONG LastRefCount = ProxyInterface->Release();
 
-	// Shaders are destroyed alongside the device that created them in D3D8 but not in D3D9
-	// so we Release all the shaders when the device releases to mirror that behaviour
-	if (LastRefCount != 0 && LastRefCount == (VertexShaderAndDeclarationCount + PixelShaderHandles.size() + StateBlockTokens.size()))
+	// Shaders and state blocks increase ref counter in d3d9 but not in d3d8
+	DWORD ExtraRefs = StateBlockCount + PixelShaderCount + VertexShaderAndDeclarationCount;
+	if (ExtraRefs <= LastRefCount)
 	{
-		ProxyInterface->AddRef();
-		ReleaseShadersAndStateBlocks();
-		LastRefCount = ProxyInterface->Release();
-		assert(LastRefCount == 0);
+		LastRefCount = LastRefCount - ExtraRefs;
 	}
 
 	if (LastRefCount == 0)
@@ -775,12 +781,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::EndStateBlock(DWORD *pToken)
 	if (pToken == nullptr)
 		return D3DERR_INVALIDCALL;
 
-	HRESULT hr = ProxyInterface->EndStateBlock(reinterpret_cast<IDirect3DStateBlock9 **>(pToken));
-
-	if (SUCCEEDED(hr))
-		StateBlockTokens.insert(*pToken);
-
-	return hr;
+	return ProxyInterface->EndStateBlock(reinterpret_cast<IDirect3DStateBlock9 **>(pToken));
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::ApplyStateBlock(DWORD Token)
 {
@@ -803,7 +804,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteStateBlock(DWORD Token)
 
 	reinterpret_cast<IDirect3DStateBlock9 *>(Token)->Release();
 
-	StateBlockTokens.erase(Token);
+	StateBlockCount--;
 
 	return D3D_OK;
 }
@@ -819,7 +820,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateStateBlock(D3DSTATEBLOCKTYPE Ty
 	HRESULT hr = ProxyInterface->CreateStateBlock(Type, reinterpret_cast<IDirect3DStateBlock9 **>(pToken));
 
 	if (SUCCEEDED(hr))
-		StateBlockTokens.insert(*pToken);
+		StateBlockCount++;
 
 	return hr;
 }
@@ -1438,7 +1439,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 		ShaderInfo = new VertexShaderInfo();
 
 		hr = ProxyInterface->CreateVertexShader(static_cast<const DWORD *>(Assembly->GetBufferPointer()), &ShaderInfo->Shader);
-		VertexShaderAndDeclarationCount++;
 
 		Assembly->Release();
 	}
@@ -1456,17 +1456,17 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 
 		if (SUCCEEDED(hr))
 		{
-			// Store the shader handle before it's bit-manipulated
-			
-			
 			// Since 'Shader' is at least 8 byte aligned, we can safely shift it to right and end up not overwriting the top bit
 			assert((reinterpret_cast<DWORD>(ShaderInfo) & 1) == 0);
 			const DWORD ShaderMagic = reinterpret_cast<DWORD>(ShaderInfo) >> 1;
 
 			*pHandle = ShaderMagic | 0x80000000;
 
-			VertexShaderHandles.insert(*pHandle);
 			VertexShaderAndDeclarationCount++;
+			if (ShaderInfo->Shader)
+			{
+				VertexShaderAndDeclarationCount++;
+			}
 		}
 		else
 		{
@@ -1476,7 +1476,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
 			if (ShaderInfo->Shader != nullptr) 
 			{
 				ShaderInfo->Shader->Release();
-				VertexShaderAndDeclarationCount--;
 			}
 		}
 	}
@@ -1537,8 +1536,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteVertexShader(DWORD Handle)
 {
 	if ((Handle & 0x80000000) == 0)
 		return D3DERR_INVALIDCALL;
-
-	VertexShaderHandles.erase(Handle);
 
 	if (CurrentVertexShaderHandle == Handle)
 		SetVertexShader(0);
@@ -2105,7 +2102,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 	}
 	else
 	{
-		PixelShaderHandles.insert(*pHandle);
+		PixelShaderCount++;
 	}
 
 	return hr;
@@ -2135,7 +2132,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeletePixelShader(DWORD Handle)
 
 	reinterpret_cast<IDirect3DPixelShader9 *>(Handle)->Release();
 
-	PixelShaderHandles.erase(Handle);
+	PixelShaderCount--;
 
 	return D3D_OK;
 }
@@ -2187,24 +2184,4 @@ void Direct3DDevice8::ApplyClipPlanes()
 
 		index++;
 	}
-}
-
-void Direct3DDevice8::ReleaseShadersAndStateBlocks()
-{
-	for (auto Handle : PixelShaderHandles)
-	{
-		DeletePixelShader(Handle);
-	}
-	PixelShaderHandles.clear();
-	for (auto Handle : VertexShaderHandles)
-	{
-		DeleteVertexShader(Handle);
-	}
-	VertexShaderHandles.clear();
-	VertexShaderAndDeclarationCount = 0;
-	for (auto Token : StateBlockTokens)
-	{
-		DeleteStateBlock(Token);
-	}
-	StateBlockTokens.clear();
 }
