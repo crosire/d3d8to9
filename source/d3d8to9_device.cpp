@@ -792,7 +792,12 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::EndStateBlock(DWORD *pToken)
 	if (pToken == nullptr)
 		return D3DERR_INVALIDCALL;
 
-	return ProxyInterface->EndStateBlock(reinterpret_cast<IDirect3DStateBlock9 **>(pToken));
+	HRESULT hr = ProxyInterface->EndStateBlock(reinterpret_cast<IDirect3DStateBlock9**>(pToken));
+
+	if (SUCCEEDED(hr))
+		StateBlockTokens.insert(*pToken);
+
+	return hr;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::ApplyStateBlock(DWORD Token)
 {
