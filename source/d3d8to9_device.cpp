@@ -2223,7 +2223,7 @@ void Direct3DDevice8::ReleaseShadersAndStateBlocks()
 	VertexShaderAndDeclarationCount = 0;
 	while (!StateBlockTokens.empty())
 	{
-		DWORD Token = *VertexShaderHandles.begin();
+		DWORD Token = *StateBlockTokens.begin();
 		DeleteStateBlock(Token);
 	}
 }
