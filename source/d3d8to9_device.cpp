@@ -2210,21 +2210,20 @@ void Direct3DDevice8::ApplyClipPlanes()
 
 void Direct3DDevice8::ReleaseShadersAndStateBlocks()
 {
-	// Since DeletePixelShader, [...] each erases the handle from the unordered set we need to use a temporary set
-	std::unordered_set<DWORD> tmpPixelShaderHandles = std::move(PixelShaderHandles);
-	for (auto Handle : tmpPixelShaderHandles)
+	while (!PixelShaderHandles.empty())
 	{
+		DWORD Handle = *PixelShaderHandles.begin();
 		DeletePixelShader(Handle);
 	}
-	std::unordered_set<DWORD> tmpVertexShaderHandles = std::move(VertexShaderHandles);
-	for (auto Handle : tmpVertexShaderHandles)
+	while (!VertexShaderHandles.empty())
 	{
+		DWORD Handle = *VertexShaderHandles.begin();
 		DeleteVertexShader(Handle);
 	}
-	std::unordered_set<DWORD> tmpStateBlockTokens = std::move(StateBlockTokens);
 	VertexShaderAndDeclarationCount = 0;
-	for (auto Token : tmpStateBlockTokens)
+	while (!StateBlockTokens.empty())
 	{
+		DWORD Token = *VertexShaderHandles.begin();
 		DeleteStateBlock(Token);
 	}
 }
