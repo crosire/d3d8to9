@@ -10,8 +10,8 @@
 
 struct VertexShaderInfo
 {
-	IDirect3DVertexShader9 *Shader;
-	IDirect3DVertexDeclaration9 *Declaration;
+	IDirect3DVertexShader9 *Shader = nullptr;
+	IDirect3DVertexDeclaration9 *Declaration = nullptr;
 };
 
 Direct3DDevice8::Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterface, BOOL EnableZBufferDiscarding) :
@@ -1552,7 +1552,10 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteVertexShader(DWORD Handle)
 	VertexShaderHandles.erase(Handle);
 
 	if (CurrentVertexShaderHandle == Handle)
-		SetVertexShader(0);
+	{
+		ProxyInterface->SetVertexShader(nullptr);
+		CurrentVertexShaderHandle = 0;
+	}
 
 	const DWORD HandleMagic = Handle << 1;
 	VertexShaderInfo *const ShaderInfo = reinterpret_cast<VertexShaderInfo *>(HandleMagic);
@@ -2202,20 +2205,21 @@ void Direct3DDevice8::ApplyClipPlanes()
 
 void Direct3DDevice8::ReleaseShadersAndStateBlocks()
 {
-	for (auto Handle : PixelShaderHandles)
+	// Since DeletePixelShader, [...] each erases the handle from the unordered set we need to use a temporary set
+	std::unordered_set<DWORD> tmpPixelShaderHandles = std::move(PixelShaderHandles);
+	for (auto Handle : tmpPixelShaderHandles)
 	{
 		DeletePixelShader(Handle);
 	}
-	PixelShaderHandles.clear();
-	for (auto Handle : VertexShaderHandles)
+	std::unordered_set<DWORD> tmpVertexShaderHandles = std::move(VertexShaderHandles);
+	for (auto Handle : tmpVertexShaderHandles)
 	{
 		DeleteVertexShader(Handle);
 	}
-	VertexShaderHandles.clear();
+	std::unordered_set<DWORD> tmpStateBlockTokens = std::move(StateBlockTokens);
 	VertexShaderAndDeclarationCount = 0;
-	for (auto Token : StateBlockTokens)
+	for (auto Token : tmpStateBlockTokens)
 	{
 		DeleteStateBlock(Token);
 	}
-	StateBlockTokens.clear();
 }
