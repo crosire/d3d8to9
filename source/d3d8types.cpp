@@ -15,6 +15,16 @@ bool SupportsPalettes()
 	return hasPalette;
 }
 
+bool IsDepthStencil(D3DFORMAT &Format) {
+	return Format == D3DFMT_D16_LOCKABLE
+		|| Format == D3DFMT_D16
+		|| Format == D3DFMT_D32
+		|| Format == D3DFMT_D15S1
+		|| Format == D3DFMT_D24X4S4
+		|| Format == D3DFMT_D24S8
+		|| Format == D3DFMT_D24X8;
+}
+
 static UINT CalcTextureSize(UINT Width, UINT Height, UINT Depth, D3DFORMAT Format)
 {
 	switch (static_cast<DWORD>(Format))
