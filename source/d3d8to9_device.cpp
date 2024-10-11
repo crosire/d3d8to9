@@ -19,6 +19,10 @@ Direct3DDevice8::Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterfac
 {
 	ProxyAddressLookupTable = new AddressLookupTable(this);
 	PaletteFlag = SupportsPalettes();
+
+	// The default value of D3DRS_POINTSIZE_MIN is 0.0f in D3D8,
+	// whereas in D3D9 it is 1.0f, so adjust it as needed
+	ProxyInterface->SetRenderState(D3DRS_POINTSIZE_MIN, (DWORD) 0.0f);
 }
 Direct3DDevice8::~Direct3DDevice8()
 {
@@ -224,7 +228,16 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::Reset(D3DPRESENT_PARAMETERS8 *pPresen
 		}
 	}
 
-	return ProxyInterface->Reset(&PresentParams);
+	HRESULT hr = ProxyInterface->Reset(&PresentParams);
+
+	if (SUCCEEDED(hr))
+	{
+		// The default value of D3DRS_POINTSIZE_MIN is 0.0f in D3D8,
+		// whereas in D3D9 it is 1.0f, so adjust it as needed
+		ProxyInterface->SetRenderState(D3DRS_POINTSIZE_MIN, (DWORD) 0.0f);
+	}
+
+	return hr;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
 {
