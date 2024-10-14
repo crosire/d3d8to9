@@ -15,6 +15,120 @@ PFN_D3DXLoadSurfaceFromSurface D3DXLoadSurfaceFromSurface = nullptr;
 std::ofstream LOG;
 #endif
 
+extern "C" HRESULT WINAPI ValidatePixelShader(const DWORD* pPixelShader, const D3DCAPS8* pCaps, BOOL ReturnErrors, char** pErrorsString)
+{
+#ifndef D3D8TO9NOLOG
+	LOG << "Redirecting '" << "ValidatePixelShader " << "(" << pPixelShader << ", " << pCaps << ", " << ReturnErrors << ", " << pErrorsString << ")' ..." << std::endl;
+#endif
+
+	HRESULT hr = E_FAIL;
+	char* errorMessage = "";
+
+	if (!pPixelShader)
+	{
+		errorMessage = "Invalid code pointer.\n";
+	}
+	else
+	{
+		switch (*pPixelShader)
+		{
+		case D3DPS_VERSION(1, 0):
+		case D3DPS_VERSION(1, 1):
+		case D3DPS_VERSION(1, 2):
+		case D3DPS_VERSION(1, 3):
+		case D3DPS_VERSION(1, 4):
+			if (pCaps && *pPixelShader > pCaps->PixelShaderVersion)
+			{
+				errorMessage = "Shader version not supported by caps.\n";
+				break;
+			}
+			hr = S_OK;
+			break;
+
+		default:
+			errorMessage = "Unsupported shader version.\n";
+		}
+	}
+
+	if (!ReturnErrors)
+	{
+		errorMessage = "";
+	}
+
+	if (pErrorsString)
+	{
+		const size_t size = strlen(errorMessage) + 1;
+
+		*pErrorsString = (char*) HeapAlloc(GetProcessHeap(), 0, size);
+		if (*pErrorsString)
+		{
+			memcpy(*pErrorsString, errorMessage, size);
+		}
+	}
+
+	return hr;
+}
+
+extern "C" HRESULT WINAPI ValidateVertexShader(const DWORD* pVertexShader, const DWORD* pVertexDecl, const D3DCAPS8* pCaps, BOOL ReturnErrors, char** pErrorsString)
+{
+	UNREFERENCED_PARAMETER(pVertexDecl);
+
+#ifndef D3D8TO9NOLOG
+	LOG << "Redirecting '" << "ValidateVertexShader " << "(" << pVertexShader << ", " << pVertexDecl << ", " << pCaps << ", " << ReturnErrors << ", " << pErrorsString << ")' ..." << std::endl;
+#endif
+
+	HRESULT hr = E_FAIL;
+	char* errorMessage = "";
+
+	if (!pVertexShader)
+	{
+		errorMessage = "Invalid code pointer.\n";
+	}
+	else
+	{
+		switch (*pVertexShader)
+		{
+		case D3DVS_VERSION(1, 0):
+		case D3DVS_VERSION(1, 1):
+			if (pCaps && *pVertexShader > pCaps->VertexShaderVersion)
+			{
+				errorMessage = "Shader version not supported by caps.\n";
+				break;
+			}
+			hr = S_OK;
+			break;
+
+		default:
+			errorMessage = "Unsupported shader version.\n";
+		}
+	}
+
+	if (!ReturnErrors)
+	{
+		errorMessage = "";
+	}
+
+	if (pErrorsString)
+	{
+		const size_t size = strlen(errorMessage) + 1;
+
+		*pErrorsString = (char*) HeapAlloc(GetProcessHeap(), 0, size);
+		if (*pErrorsString)
+		{
+			memcpy(*pErrorsString, errorMessage, size);
+		}
+	}
+
+	return hr;
+}
+
+extern "C" void WINAPI DebugSetMute()
+{
+#ifndef D3D8TO9NOLOG
+	LOG << "Redirecting '" << "DebugSetMute ()" << "'..." << std::endl;
+#endif
+}
+
 extern "C" IDirect3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
 {
 #ifndef D3D8TO9NOLOG
