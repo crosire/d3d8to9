@@ -90,6 +90,14 @@ HRESULT STDMETHODCALLTYPE Direct3DVolume8::GetDesc(D3DVOLUME_DESC8 *pDesc)
 }
 HRESULT STDMETHODCALLTYPE Direct3DVolume8::LockBox(D3DLOCKED_BOX *pLockedVolume, const D3DBOX *pBox, DWORD Flags)
 {
+	if (pLockedVolume != nullptr)
+	{
+		// D3D8 clears the contents of pLockedVolume
+		pLockedVolume->pBits = nullptr;
+		pLockedVolume->RowPitch = 0;
+		pLockedVolume->SlicePitch = 0;
+	}
+
 	return ProxyInterface->LockBox(pLockedVolume, pBox, Flags);
 }
 HRESULT STDMETHODCALLTYPE Direct3DVolume8::UnlockBox()
