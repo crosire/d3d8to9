@@ -53,7 +53,7 @@ class Direct3DDevice8 : public IDirect3DDevice8
 	Direct3DDevice8 &operator=(const Direct3DDevice8 &) = delete;
 
 public:
-	Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterface, BOOL EnableZBufferDiscarding = FALSE);
+	Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterface, DWORD BehaviorFlags, BOOL EnableZBufferDiscarding = FALSE);
 	~Direct3DDevice8();
 
 	IDirect3DDevice9 *GetProxyInterface() const { return ProxyInterface; }
@@ -171,6 +171,7 @@ private:
 	IDirect3DSurface9 *pCurrentRenderTarget = nullptr;
 	bool PaletteFlag = false;
 	bool IsRecordingState = false;
+	bool IsMixedVPModeDevice = false;
 
 	static constexpr size_t MAX_CLIP_PLANES = 6;
 	float StoredClipPlanes[MAX_CLIP_PLANES][4] = {};
