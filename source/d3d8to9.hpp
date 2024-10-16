@@ -170,6 +170,7 @@ private:
 	DWORD CurrentVertexShaderHandle = 0, CurrentPixelShaderHandle = 0;
 	IDirect3DSurface9 *pCurrentRenderTarget = nullptr;
 	bool PaletteFlag = false;
+	bool IsRecordingState = false;
 
 	static constexpr size_t MAX_CLIP_PLANES = 6;
 	float StoredClipPlanes[MAX_CLIP_PLANES][4] = {};
