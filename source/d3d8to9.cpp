@@ -22,7 +22,7 @@ extern "C" HRESULT WINAPI ValidatePixelShader(const DWORD* pPixelShader, const D
 #endif
 
 	HRESULT hr = E_FAIL;
-	char* errorMessage = "";
+	const char* errorMessage = "";
 
 	if (!pPixelShader)
 	{
@@ -78,7 +78,7 @@ extern "C" HRESULT WINAPI ValidateVertexShader(const DWORD* pVertexShader, const
 #endif
 
 	HRESULT hr = E_FAIL;
-	char* errorMessage = "";
+	const char* errorMessage = "";
 
 	if (!pVertexShader)
 	{
