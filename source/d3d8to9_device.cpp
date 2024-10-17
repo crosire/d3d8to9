@@ -279,6 +279,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateTexture(UINT Width, UINT Height
 	if (ppTexture == nullptr)
 		return D3DERR_INVALIDCALL;
 
+	if (Format == D3DFMT_UNKNOWN)
+		return D3DERR_INVALIDCALL;
+
 	*ppTexture = nullptr;
 
 	if (Pool == D3DPOOL_DEFAULT)
@@ -312,6 +315,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVolumeTexture(UINT Width, UINT 
 	if (ppVolumeTexture == nullptr)
 		return D3DERR_INVALIDCALL;
 
+	if (Format == D3DFMT_UNKNOWN)
+		return D3DERR_INVALIDCALL;
+
 	*ppVolumeTexture = nullptr;
 
 	IDirect3DVolumeTexture9 *TextureInterface = nullptr;
@@ -327,6 +333,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVolumeTexture(UINT Width, UINT 
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateCubeTexture(UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DCubeTexture8 **ppCubeTexture)
 {
 	if (ppCubeTexture == nullptr)
+		return D3DERR_INVALIDCALL;
+
+	if (Format == D3DFMT_UNKNOWN)
 		return D3DERR_INVALIDCALL;
 
 	*ppCubeTexture = nullptr;
@@ -380,6 +389,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateRenderTarget(UINT Width, UINT H
 	if (ppSurface == nullptr)
 		return D3DERR_INVALIDCALL;
 
+	if (Format == D3DFMT_UNKNOWN)
+		return D3DERR_INVALIDCALL;
+
 	*ppSurface = nullptr;
 
 	DWORD QualityLevels = 0;
@@ -407,6 +419,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateRenderTarget(UINT Width, UINT H
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, IDirect3DSurface8 **ppSurface)
 {
 	if (ppSurface == nullptr)
+		return D3DERR_INVALIDCALL;
+
+	if (Format == D3DFMT_UNKNOWN)
 		return D3DERR_INVALIDCALL;
 
 	*ppSurface = nullptr;
@@ -442,7 +457,12 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateImageSurface(UINT Width, UINT H
 	if (ppSurface == nullptr)
 		return D3DERR_INVALIDCALL;
 
+	// Only CreateImageSurface clears the content of ppSurface
+	// before checking if Format is equal to D3DFMT_UNKNOWN.
 	*ppSurface = nullptr;
+
+	if (Format == D3DFMT_UNKNOWN)
+		return D3DERR_INVALIDCALL;
 
 	IDirect3DSurface9 *SurfaceInterface = nullptr;
 
