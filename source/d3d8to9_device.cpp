@@ -14,12 +14,13 @@ struct VertexShaderInfo
 	IDirect3DVertexDeclaration9 *Declaration = nullptr;
 };
 
-Direct3DDevice8::Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterface, BOOL EnableZBufferDiscarding) :
+Direct3DDevice8::Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterface, DWORD BehaviorFlags, BOOL EnableZBufferDiscarding) :
 	D3D(d3d), ProxyInterface(ProxyInterface), ZBufferDiscarding(EnableZBufferDiscarding)
 {
 	ProxyAddressLookupTable = new AddressLookupTable(this);
 	PaletteFlag = SupportsPalettes();
 
+	IsMixedVPModeDevice = BehaviorFlags & D3DCREATE_MIXED_VERTEXPROCESSING;
 	// The default value of D3DRS_POINTSIZE_MIN is 0.0f in D3D8,
 	// whereas in D3D9 it is 1.0f, so adjust it as needed
 	ProxyInterface->SetRenderState(D3DRS_POINTSIZE_MIN, (DWORD) 0.0f);
@@ -772,7 +773,12 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderState(D3DRENDERSTATETYPE Sta
 	case D3DRS_ZVISIBLE:
 	case D3DRS_PATCHSEGMENTS:
 	case D3DRS_LINEPATTERN:
+		return D3D_OK;
 	case D3DRS_SOFTWAREVERTEXPROCESSING:
+		// SWVP can be modified by this render state only on devices
+		// created with the D3DCREATE_MIXED_VERTEXPROCESSING flag
+		if (IsMixedVPModeDevice)
+			return ProxyInterface->SetSoftwareVertexProcessing(static_cast<BOOL>(Value));
 		return D3D_OK;
 	case D3DRS_EDGEANTIALIAS:
 		return ProxyInterface->SetRenderState(D3DRS_ANTIALIASEDLINEENABLE, Value);
@@ -810,7 +816,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetRenderState(D3DRENDERSTATETYPE Sta
 		*pValue = static_cast<DWORD>(*reinterpret_cast<const FLOAT*>(pValue) * -200000.0f);
 		return hr;
 	case D3DRS_SOFTWAREVERTEXPROCESSING:
-		*pValue = ProxyInterface->GetSoftwareVertexProcessing();
+		*pValue = static_cast<DWORD>(ProxyInterface->GetSoftwareVertexProcessing());
 		return D3D_OK;
 	case D3DRS_PATCHSEGMENTS:
 		*pValue = 1;
