@@ -91,18 +91,6 @@ HRESULT STDMETHODCALLTYPE Direct3DSurface8::GetDesc(D3DSURFACE_DESC8 *pDesc)
 }
 HRESULT STDMETHODCALLTYPE Direct3DSurface8::LockRect(D3DLOCKED_RECT *pLockedRect, const RECT *pRect, DWORD Flags)
 {
-	D3DSURFACE_DESC8 SurfaceDesc;
-
-	const HRESULT hr = GetDesc(&SurfaceDesc);
-
-	// D3D8 clears the contents of pLockedRect for all
-	// surfaces except those of type D3DRTYPE_TEXTURE
-	if (SUCCEEDED(hr) && pLockedRect != nullptr && SurfaceDesc.Type != D3DRTYPE_TEXTURE)
-	{
-		pLockedRect->pBits = nullptr;
-		pLockedRect->Pitch = 0;
-	}
-
 	return ProxyInterface->LockRect(pLockedRect, pRect, Flags);
 }
 HRESULT STDMETHODCALLTYPE Direct3DSurface8::UnlockRect()
