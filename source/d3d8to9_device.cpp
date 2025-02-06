@@ -1605,11 +1605,12 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetVertexShaderFunction(DWORD Handle,
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer8 *pStreamData, UINT Stride)
 {
-	if (pStreamData == nullptr)
-		return D3DERR_INVALIDCALL;
-
-	auto pStreamDataImpl = static_cast<Direct3DVertexBuffer8 *>(pStreamData);
-	return ProxyInterface->SetStreamSource(StreamNumber, pStreamDataImpl->GetProxyInterface(), 0, Stride);
+	IDirect3DVertexBuffer9* pStreamDataImpl = nullptr;
+	if (pStreamData != nullptr)
+	{
+		pStreamDataImpl = static_cast<Direct3DVertexBuffer8*>(pStreamData)->GetProxyInterface();
+	}
+	return ProxyInterface->SetStreamSource(StreamNumber, pStreamDataImpl, 0, Stride);
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer8 **ppStreamData, UINT *pStride)
 {
