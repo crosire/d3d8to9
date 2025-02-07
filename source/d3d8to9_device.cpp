@@ -1654,7 +1654,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetVertexShader(DWORD Handle)
 		hr = ProxyInterface->SetVertexShader(ShaderInfo->Shader);
 		ProxyInterface->SetVertexDeclaration(ShaderInfo->Declaration);
 
-		CurrentVertexShaderHandle = Handle;
+		if (SUCCEEDED(hr))
+			CurrentVertexShaderHandle = Handle;
 	}
 
 	return hr;
@@ -1749,11 +1750,11 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetVertexShaderFunction(DWORD Handle,
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer8 *pStreamData, UINT Stride)
 {
-	if (pStreamData == nullptr)
-		return D3DERR_INVALIDCALL;
+	IDirect3DVertexBuffer9 *pStreamDataImpl = nullptr;
+	if (pStreamData != nullptr)
+		pStreamDataImpl = static_cast<Direct3DVertexBuffer8 *>(pStreamData)->GetProxyInterface();
 
-	auto pStreamDataImpl = static_cast<Direct3DVertexBuffer8 *>(pStreamData);
-	return ProxyInterface->SetStreamSource(StreamNumber, pStreamDataImpl->GetProxyInterface(), 0, Stride);
+	return ProxyInterface->SetStreamSource(StreamNumber, pStreamDataImpl, 0, Stride);
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer8 **ppStreamData, UINT *pStride)
 {
@@ -1776,13 +1777,20 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetStreamSource(UINT StreamNumber, ID
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetIndices(IDirect3DIndexBuffer8 *pIndexData, UINT BaseVertexIndex)
 {
-	if (pIndexData == nullptr || BaseVertexIndex > 0x7FFFFFFF)
+	if (BaseVertexIndex > 0x7FFFFFFF)
 		return D3DERR_INVALIDCALL;
+
+	IDirect3DIndexBuffer9 *pIndexDataImpl = nullptr;
+	if (pIndexData != nullptr)
+		pIndexDataImpl = static_cast<Direct3DIndexBuffer8 *>(pIndexData)->GetProxyInterface();
+
+	const HRESULT hr = ProxyInterface->SetIndices(pIndexDataImpl);
+	if (FAILED(hr))
+		return hr;
 
 	CurrentBaseVertexIndex = static_cast<INT>(BaseVertexIndex);
 
-	auto pIndexDataImpl = static_cast<Direct3DIndexBuffer8 *>(pIndexData);
-	return ProxyInterface->SetIndices(pIndexDataImpl->GetProxyInterface());
+	return D3D_OK;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetIndices(IDirect3DIndexBuffer8 **ppIndexData, UINT *pBaseVertexIndex)
 {
@@ -2256,9 +2264,13 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetPixelShader(DWORD Handle)
 {
+	const HRESULT hr = ProxyInterface->SetPixelShader(reinterpret_cast<IDirect3DPixelShader9 *>(Handle));
+	if (FAILED(hr))
+		return hr;
+
 	CurrentPixelShaderHandle = Handle;
 
-	return ProxyInterface->SetPixelShader(reinterpret_cast<IDirect3DPixelShader9 *>(Handle));
+	return D3D_OK;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetPixelShader(DWORD *pHandle)
 {
