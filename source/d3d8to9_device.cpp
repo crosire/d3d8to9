@@ -1607,9 +1607,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetStreamSource(UINT StreamNumber, ID
 {
 	IDirect3DVertexBuffer9* pStreamDataImpl = nullptr;
 	if (pStreamData != nullptr)
-	{
 		pStreamDataImpl = static_cast<Direct3DVertexBuffer8*>(pStreamData)->GetProxyInterface();
-	}
+
 	return ProxyInterface->SetStreamSource(StreamNumber, pStreamDataImpl, 0, Stride);
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer8 **ppStreamData, UINT *pStride)
@@ -1633,13 +1632,20 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetStreamSource(UINT StreamNumber, ID
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetIndices(IDirect3DIndexBuffer8 *pIndexData, UINT BaseVertexIndex)
 {
-	if (pIndexData == nullptr || BaseVertexIndex > 0x7FFFFFFF)
+	if (BaseVertexIndex > 0x7FFFFFFF)
 		return D3DERR_INVALIDCALL;
+
+	IDirect3DIndexBuffer9* pIndexDataImpl = nullptr;
+	if (pIndexData != nullptr)
+		pIndexDataImpl = static_cast<Direct3DIndexBuffer8*>(pIndexData)->GetProxyInterface();
+
+	const HRESULT hr = ProxyInterface->SetIndices(pIndexDataImpl);
+	if (FAILED(hr))
+		return hr;
 
 	CurrentBaseVertexIndex = static_cast<INT>(BaseVertexIndex);
 
-	auto pIndexDataImpl = static_cast<Direct3DIndexBuffer8 *>(pIndexData);
-	return ProxyInterface->SetIndices(pIndexDataImpl->GetProxyInterface());
+	return D3D_OK;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetIndices(IDirect3DIndexBuffer8 **ppIndexData, UINT *pBaseVertexIndex)
 {
