@@ -1513,7 +1513,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetVertexShader(DWORD Handle)
 		hr = ProxyInterface->SetVertexShader(ShaderInfo->Shader);
 		ProxyInterface->SetVertexDeclaration(ShaderInfo->Declaration);
 
-		CurrentVertexShaderHandle = Handle;
+		if (SUCCEEDED(hr))
+			CurrentVertexShaderHandle = Handle;
 	}
 
 	return hr;
@@ -1605,9 +1606,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetVertexShaderFunction(DWORD Handle,
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer8 *pStreamData, UINT Stride)
 {
-	IDirect3DVertexBuffer9* pStreamDataImpl = nullptr;
+	IDirect3DVertexBuffer9 *pStreamDataImpl = nullptr;
 	if (pStreamData != nullptr)
-		pStreamDataImpl = static_cast<Direct3DVertexBuffer8*>(pStreamData)->GetProxyInterface();
+		pStreamDataImpl = static_cast<Direct3DVertexBuffer8 *>(pStreamData)->GetProxyInterface();
 
 	return ProxyInterface->SetStreamSource(StreamNumber, pStreamDataImpl, 0, Stride);
 }
@@ -1635,9 +1636,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetIndices(IDirect3DIndexBuffer8 *pIn
 	if (BaseVertexIndex > 0x7FFFFFFF)
 		return D3DERR_INVALIDCALL;
 
-	IDirect3DIndexBuffer9* pIndexDataImpl = nullptr;
+	IDirect3DIndexBuffer9 *pIndexDataImpl = nullptr;
 	if (pIndexData != nullptr)
-		pIndexDataImpl = static_cast<Direct3DIndexBuffer8*>(pIndexData)->GetProxyInterface();
+		pIndexDataImpl = static_cast<Direct3DIndexBuffer8 *>(pIndexData)->GetProxyInterface();
 
 	const HRESULT hr = ProxyInterface->SetIndices(pIndexDataImpl);
 	if (FAILED(hr))
@@ -2119,9 +2120,13 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetPixelShader(DWORD Handle)
 {
+	const HRESULT hr = ProxyInterface->SetPixelShader(reinterpret_cast<IDirect3DPixelShader9 *>(Handle));
+	if (FAILED(hr))
+		return hr;
+
 	CurrentPixelShaderHandle = Handle;
 
-	return ProxyInterface->SetPixelShader(reinterpret_cast<IDirect3DPixelShader9 *>(Handle));
+	return D3D_OK;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetPixelShader(DWORD *pHandle)
 {
