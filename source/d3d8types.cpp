@@ -132,6 +132,7 @@ void ConvertPresentParameters(D3DPRESENT_PARAMETERS8 &Input, D3DPRESENT_PARAMETE
 	Output.BackBufferFormat = Input.BackBufferFormat;
 	Output.BackBufferCount = Input.BackBufferCount;
 	Output.MultiSampleType = Input.MultiSampleType;
+	// MultiSampleQuality is only used in conjunction with D3DMULTISAMPLE_NONMASKABLE, which is not available in D3D8
 	Output.MultiSampleQuality = 0;
 	Output.SwapEffect = Input.SwapEffect;
 	Output.hDeviceWindow = Input.hDeviceWindow;
