@@ -823,9 +823,14 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteStateBlock(DWORD Token)
 	if (IsRecordingState)
 		return D3DERR_INVALIDCALL;
 
-	reinterpret_cast<IDirect3DStateBlock9 *>(Token)->Release();
+	auto it = StateBlockTokens.find(Token);
+	if (it != StateBlockTokens.end())
+		return D3DERR_INVALIDCALL;
 
 	StateBlockTokens.erase(Token);
+
+
+	reinterpret_cast<IDirect3DStateBlock9 *>(Token)->Release();
 
 	return D3D_OK;
 }
@@ -1620,7 +1625,11 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteVertexShader(DWORD Handle)
 	if ((Handle & 0x80000000) == 0)
 		return D3DERR_INVALIDCALL;
 
-	VertexShaderHandles.erase(Handle);
+	auto it = VertexShaderHandles.find(Handle);
+	if (it == VertexShaderHandles.end())
+		return D3DERR_INVALIDCALL;
+
+	VertexShaderHandles.erase(it);
 
 	if (CurrentVertexShaderHandle == Handle)
 	{
@@ -2226,12 +2235,16 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeletePixelShader(DWORD Handle)
 	if (Handle == 0)
 		return D3DERR_INVALIDCALL;
 
+	auto it = PixelShaderHandles.find(Handle);
+	if (it == PixelShaderHandles.end())
+		return D3DERR_INVALIDCALL;
+
+	PixelShaderHandles.erase(it);
+
 	if (CurrentPixelShaderHandle == Handle)
 		SetPixelShader(0);
 
 	reinterpret_cast<IDirect3DPixelShader9 *>(Handle)->Release();
-
-	PixelShaderHandles.erase(Handle);
 
 	return D3D_OK;
 }
