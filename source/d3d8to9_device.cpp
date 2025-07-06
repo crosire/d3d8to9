@@ -188,15 +188,19 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::Reset(D3DPRESENT_PARAMETERS8 *pPresen
 	if (pPresentationParameters == nullptr)
 		return D3DERR_INVALIDCALL;
 
+	// StateBlocks are destroyed during a Reset in D3D9 so need to clear the cache to handle this properly
+	while (!StateBlockTokens.empty())
+	{
+		DWORD Token = *StateBlockTokens.begin();
+		DeleteStateBlock(Token);
+	}
+
 	pCurrentRenderTarget = nullptr;
 
 	D3DPRESENT_PARAMETERS PresentParams;
 	ConvertPresentParameters(*pPresentationParameters, PresentParams);
 
 	HRESULT hr = ProxyInterface->Reset(&PresentParams);
-
-	// StateBlocks are destroyed during a Reset in D3D9 so need to clear the cache to handle this properly
-	StateBlockTokens.clear();
 
 	if (SUCCEEDED(hr))
 	{
