@@ -797,31 +797,40 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::EndStateBlock(DWORD *pToken)
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::ApplyStateBlock(DWORD Token)
 {
-	if (Token == 0 || StateBlockTokens.find(Token) == StateBlockTokens.end())
+	if (Token == 0)
 		return D3DERR_INVALIDCALL;
 
 	if (IsRecordingState)
 		return D3DERR_INVALIDCALL;
+
+	if (StateBlockTokens.find(Token) == StateBlockTokens.end())
+		return D3D_OK;
 
 	return reinterpret_cast<IDirect3DStateBlock9 *>(Token)->Apply();
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::CaptureStateBlock(DWORD Token)
 {
-	if (Token == 0 || StateBlockTokens.find(Token) == StateBlockTokens.end())
+	if (Token == 0)
 		return D3DERR_INVALIDCALL;
 
 	if (IsRecordingState)
 		return D3DERR_INVALIDCALL;
+
+	if (StateBlockTokens.find(Token) == StateBlockTokens.end())
+		return D3D_OK;
 
 	return reinterpret_cast<IDirect3DStateBlock9 *>(Token)->Capture();
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteStateBlock(DWORD Token)
 {
-	if (Token == 0 || StateBlockTokens.find(Token) == StateBlockTokens.end())
+	if (Token == 0)
 		return D3DERR_INVALIDCALL;
 
 	if (IsRecordingState)
 		return D3DERR_INVALIDCALL;
+
+	if (StateBlockTokens.find(Token) == StateBlockTokens.end())
+		return D3D_OK;
 
 	reinterpret_cast<IDirect3DStateBlock9 *>(Token)->Release();
 
