@@ -190,10 +190,20 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::Reset(D3DPRESENT_PARAMETERS8 *pPresen
 
 	pCurrentRenderTarget = nullptr;
 
+	const HRESULT deviceState = ProxyInterface->TestCooperativeLevel();
+
+	if (deviceState == D3DERR_DEVICENOTRESET) {
+		while (!StateBlockTokens.empty())
+		{
+			DWORD Token = *StateBlockTokens.begin();
+			DeleteStateBlock(Token);
+		}
+	}
+
 	D3DPRESENT_PARAMETERS PresentParams;
 	ConvertPresentParameters(*pPresentationParameters, PresentParams);
 
-	HRESULT hr = ProxyInterface->Reset(&PresentParams);
+	const HRESULT hr = ProxyInterface->Reset(&PresentParams);
 
 	if (SUCCEEDED(hr))
 	{
