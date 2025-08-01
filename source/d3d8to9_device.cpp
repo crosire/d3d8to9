@@ -1641,7 +1641,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteVertexShader(DWORD Handle)
 
 	auto it = VertexShaderHandles.find(Handle);
 	if (it == VertexShaderHandles.end())
-		return D3DERR_INVALIDCALL;
+		return D3D_OK;
 
 	VertexShaderHandles.erase(it);
 
@@ -2251,7 +2251,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeletePixelShader(DWORD Handle)
 
 	auto it = PixelShaderHandles.find(Handle);
 	if (it == PixelShaderHandles.end())
-		return D3DERR_INVALIDCALL;
+		return D3D_OK;
 
 	PixelShaderHandles.erase(it);
 
