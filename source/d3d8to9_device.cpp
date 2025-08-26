@@ -188,8 +188,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::Reset(D3DPRESENT_PARAMETERS8 *pPresen
 	if (pPresentationParameters == nullptr)
 		return D3DERR_INVALIDCALL;
 
-	pCurrentRenderTarget = nullptr;
-
 	const HRESULT deviceState = ProxyInterface->TestCooperativeLevel();
 
 	if (deviceState == D3DERR_DEVICENOTRESET) {
@@ -568,8 +566,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderTarget(IDirect3DSurface8 *pR
 		hr = ProxyInterface->SetRenderTarget(0, pRenderTargetImpl->GetProxyInterface());
 		if (FAILED(hr))
 			return hr;
-
-		pCurrentRenderTarget = pRenderTargetImpl->GetProxyInterface();
 	}
 
 	if (pNewZStencil != nullptr)
@@ -596,8 +592,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetRenderTarget(IDirect3DSurface8 **p
 	const HRESULT hr = ProxyInterface->GetRenderTarget(0, &SurfaceInterface);
 	if (FAILED(hr))
 		return hr;
-
-	pCurrentRenderTarget = SurfaceInterface;
 
 	*ppRenderTarget = ProxyAddressLookupTable->FindAddress<Direct3DSurface8>(SurfaceInterface);
 
@@ -644,11 +638,15 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::MultiplyTransform(D3DTRANSFORMSTATETY
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetViewport(const D3DVIEWPORT8 *pViewport)
 {
-	if (pCurrentRenderTarget != nullptr)
+	IDirect3DSurface9 *pCurrentRenderTarget = nullptr;
+	if (SUCCEEDED(ProxyInterface->GetRenderTarget(0, &pCurrentRenderTarget)))
 	{
 		D3DSURFACE_DESC Desc;
+		pCurrentRenderTarget->GetDesc(&Desc);
 
-		if (SUCCEEDED(pCurrentRenderTarget->GetDesc(&Desc)) && (pViewport->Y + pViewport->Height > Desc.Height || pViewport->X + pViewport->Width > Desc.Width))
+		pCurrentRenderTarget->Release();
+
+		if (pViewport->Y + pViewport->Height > Desc.Height || pViewport->X + pViewport->Width > Desc.Width)
 			return D3DERR_INVALIDCALL;
 	}
 

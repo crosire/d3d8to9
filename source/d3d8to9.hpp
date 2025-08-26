@@ -168,7 +168,6 @@ private:
 	INT CurrentBaseVertexIndex = 0;
 	const BOOL ZBufferDiscarding = FALSE;
 	DWORD CurrentVertexShaderHandle = 0, CurrentPixelShaderHandle = 0;
-	IDirect3DSurface9 *pCurrentRenderTarget = nullptr;
 	bool PaletteFlag = false;
 	bool IsRecordingState = false;
 	bool IsMixedVPModeDevice = false;
