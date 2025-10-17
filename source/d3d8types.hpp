@@ -194,6 +194,9 @@ struct D3DADAPTER_IDENTIFIER8
 bool SupportsPalettes();
 bool IsDepthStencil(D3DFORMAT &format);
 
+DWORD GetDepthStencilBitCount(D3DFORMAT Format);
+DWORD CalcDepthBias(DWORD ZBias, DWORD DepthBits);
+
 void ConvertCaps(D3DCAPS9 &input, D3DCAPS8 &output);
 void ConvertVolumeDesc(D3DVOLUME_DESC &input, D3DVOLUME_DESC8 &output);
 void ConvertSurfaceDesc(D3DSURFACE_DESC &input, D3DSURFACE_DESC8 &output);

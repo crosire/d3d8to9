@@ -14,11 +14,13 @@ struct VertexShaderInfo
 	IDirect3DVertexDeclaration9 *Declaration = nullptr;
 };
 
-Direct3DDevice8::Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterface, DWORD BehaviorFlags, BOOL EnableZBufferDiscarding) :
+Direct3DDevice8::Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterface, DWORD BehaviorFlags, D3DFORMAT ZBufferFormat, BOOL EnableZBufferDiscarding) :
 	D3D(d3d), ProxyInterface(ProxyInterface), ZBufferDiscarding(EnableZBufferDiscarding)
 {
 	ProxyAddressLookupTable = new AddressLookupTable(this);
 	PaletteFlag = SupportsPalettes();
+
+	ZBufferBitCount = GetDepthStencilBitCount(ZBufferFormat);
 
 	IsMixedVPModeDevice = BehaviorFlags & D3DCREATE_MIXED_VERTEXPROCESSING;
 	// The default value of D3DRS_POINTSIZE_MIN is 0.0f in D3D8,
@@ -568,6 +570,14 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderTarget(IDirect3DSurface8 *pR
 		hr = ProxyInterface->SetDepthStencilSurface(pNewZStencilImpl->GetProxyInterface());
 		if (FAILED(hr))
 			return hr;
+
+		if (ZBiasRenderState != 0)
+		{
+			D3DSURFACE_DESC8 Desc = {};
+			pNewZStencilImpl->GetDesc(&Desc);
+			ZBufferBitCount = GetDepthStencilBitCount(Desc.Format);
+			ProxyInterface->SetRenderState(D3DRS_DEPTHBIAS, CalcDepthBias(ZBiasRenderState, ZBufferBitCount));
+		}
 	}
 	else
 	{
@@ -705,7 +715,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetClipPlane(DWORD Index, float *pPla
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderState(D3DRENDERSTATETYPE State, DWORD Value)
 {
-	FLOAT Biased;
 	HRESULT hr;
 
 	switch (static_cast<DWORD>(State))
@@ -728,8 +737,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderState(D3DRENDERSTATETYPE Sta
 			ClipPlaneRenderState = Value;
 		return hr;
 	case D3DRS_ZBIAS:
-		Biased = static_cast<FLOAT>(Value) * -0.000005f;
-		Value = *reinterpret_cast<const DWORD *>(&Biased);
+		ZBiasRenderState = Value;
+		Value = CalcDepthBias(Value, ZBufferBitCount);
 		State = D3DRS_DEPTHBIAS;
 	default:
 		return ProxyInterface->SetRenderState(State, Value);
@@ -740,7 +749,6 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetRenderState(D3DRENDERSTATETYPE Sta
 	if (pValue == nullptr)
 		return D3DERR_INVALIDCALL;
 
-	HRESULT hr;
 	*pValue = 0;
 
 	switch (static_cast<DWORD>(State))
@@ -752,9 +760,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetRenderState(D3DRENDERSTATETYPE Sta
 	case D3DRS_EDGEANTIALIAS:
 		return ProxyInterface->GetRenderState(D3DRS_ANTIALIASEDLINEENABLE, pValue);
 	case D3DRS_ZBIAS:
-		hr = ProxyInterface->GetRenderState(D3DRS_DEPTHBIAS, pValue);
-		*pValue = static_cast<DWORD>(*reinterpret_cast<const FLOAT*>(pValue) * -200000.0f);
-		return hr;
+		*pValue = ZBiasRenderState;
+		return D3D_OK;
 	case D3DRS_SOFTWAREVERTEXPROCESSING:
 		*pValue = static_cast<DWORD>(ProxyInterface->GetSoftwareVertexProcessing());
 		return D3D_OK;

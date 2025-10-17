@@ -25,6 +25,35 @@ bool IsDepthStencil(D3DFORMAT &Format) {
 		|| Format == D3DFMT_D24X8;
 }
 
+DWORD GetDepthStencilBitCount(D3DFORMAT Format)
+{
+	switch (Format)
+	{
+	case D3DFMT_D15S1:
+		return 15;
+	case D3DFMT_D16_LOCKABLE:
+	case D3DFMT_D16:
+		return 16;
+	case D3DFMT_D24X4S4:
+	case D3DFMT_D24S8:
+	case D3DFMT_D24X8:
+		return 24;
+	case D3DFMT_D32:
+		return 32;
+	}
+	return 0;
+}
+
+DWORD CalcDepthBias(DWORD ZBias, DWORD DepthBitCount)
+{
+	if (ZBias == 0)
+		return 0;
+
+	DepthBitCount = DepthBitCount ? DepthBitCount : 16;
+	float DepthBias = static_cast<float>(static_cast<double>(std::min(ZBias, 16UL)) * (1.0 / ((1ULL << std::min(std::max(DepthBitCount, 15UL), 32UL)) - 1)));
+	return *reinterpret_cast<DWORD*>(&DepthBias);
+}
+
 static UINT CalcTextureSize(UINT Width, UINT Height, UINT Depth, D3DFORMAT Format)
 {
 	switch (static_cast<DWORD>(Format))

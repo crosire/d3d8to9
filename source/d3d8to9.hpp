@@ -53,7 +53,7 @@ class Direct3DDevice8 : public IDirect3DDevice8
 	Direct3DDevice8 &operator=(const Direct3DDevice8 &) = delete;
 
 public:
-	Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterface, DWORD BehaviorFlags, BOOL EnableZBufferDiscarding = FALSE);
+	Direct3DDevice8(Direct3D8 *d3d, IDirect3DDevice9 *ProxyInterface, DWORD BehaviorFlags, D3DFORMAT ZBufferFormat, BOOL EnableZBufferDiscarding);
 	~Direct3DDevice8();
 
 	IDirect3DDevice9 *GetProxyInterface() const { return ProxyInterface; }
@@ -165,8 +165,10 @@ private:
 
 	Direct3D8 *const D3D;
 	IDirect3DDevice9 *const ProxyInterface;
-	INT CurrentBaseVertexIndex = 0;
 	const BOOL ZBufferDiscarding = FALSE;
+	DWORD ZBufferBitCount = 0;
+	DWORD ZBiasRenderState = 0;
+	INT CurrentBaseVertexIndex = 0;
 	DWORD CurrentVertexShaderHandle = 0, CurrentPixelShaderHandle = 0;
 	IDirect3DSurface9 *pCurrentRenderTarget = nullptr;
 	bool PaletteFlag = false;
