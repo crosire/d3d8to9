@@ -573,13 +573,10 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetRenderTarget(IDirect3DSurface8 *pR
 		if (FAILED(hr))
 			return hr;
 
-		if (ZBiasRenderState != 0)
-		{
-			D3DSURFACE_DESC8 Desc = {};
-			pNewZStencilImpl->GetDesc(&Desc);
-			ZBufferBitCount = GetDepthStencilBitCount(Desc.Format);
-			ProxyInterface->SetRenderState(D3DRS_DEPTHBIAS, CalcDepthBias(ZBiasRenderState, ZBufferBitCount));
-		}
+		D3DSURFACE_DESC8 Desc = {};
+		pNewZStencilImpl->GetDesc(&Desc);
+		ZBufferBitCount = GetDepthStencilBitCount(Desc.Format);
+		ProxyInterface->SetRenderState(D3DRS_DEPTHBIAS, CalcDepthBias(ZBiasRenderState, ZBufferBitCount));
 	}
 	else
 	{

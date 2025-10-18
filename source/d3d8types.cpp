@@ -50,7 +50,7 @@ DWORD CalcDepthBias(DWORD ZBias, DWORD DepthBitCount)
 		return 0;
 
 	DepthBitCount = DepthBitCount ? std::min(std::max(DepthBitCount, 15UL), 32UL) : 16;
-	float DepthBias = -static_cast<float>(std::min<double>(ZBias, 16) / ((1ULL << DepthBitCount) - 1));
+	float DepthBias = -(std::min<float>(ZBias, 16) / ((1ULL << DepthBitCount) - 1));
 	return *reinterpret_cast<DWORD*>(&DepthBias);
 }
 
