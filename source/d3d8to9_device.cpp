@@ -190,6 +190,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::Reset(D3DPRESENT_PARAMETERS8 *pPresen
 	if (pPresentationParameters == nullptr)
 		return D3DERR_INVALIDCALL;
 
+	ZBiasRenderState = 0;
+
 	pCurrentRenderTarget = nullptr;
 
 	D3DPRESENT_PARAMETERS PresentParams;
