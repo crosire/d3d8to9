@@ -125,7 +125,7 @@ extern "C" HRESULT WINAPI ValidateVertexShader(const DWORD* pVertexShader, const
 extern "C" void WINAPI DebugSetMute()
 {
 #ifndef D3D8TO9NOLOG
-	LOG << "Redirecting '" << "DebugSetMute ()" << "'..." << std::endl;
+	LOG << "Redirecting '" << "DebugSetMute" << "(" << ")' ..." << std::endl;
 #endif
 }
 

@@ -1,7 +1,8 @@
 d3d8to9
 =======
 
-[![Build Status](https://ci.appveyor.com/api/projects/status/aqupdda60ixgenyd?svg=true)](https://ci.appveyor.com/project/crosire/d3d8to9)
+[![GitHub Actions Status](https://github.com/crosire/d3d8to9/actions/workflows/build.yml/badge.svg)](https://github.com/crosire/d3d8to9/actions/workflows/build.yml)
+[![AppVeyor Status](https://ci.appveyor.com/api/projects/status/aqupdda60ixgenyd?svg=true)](https://ci.appveyor.com/project/crosire/d3d8to9)
 
 This is a pseudo-driver module that intends to improve compatibility and stability in games using Direct3D 8 for rendering by converting all API calls and low-level shaders to equivalent Direct3D 9 ones. By that it also opens those games to new possibilities from proven modding tools written for Direct3D 9, including [ReShade](http://reshade.me).
 
