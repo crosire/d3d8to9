@@ -1613,6 +1613,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetVertexShader(DWORD Handle)
 	if ((Handle & 0x80000000) == 0)
 	{
 		ProxyInterface->SetVertexShader(nullptr);
+		ProxyInterface->SetVertexDeclaration(nullptr);
 		hr = ProxyInterface->SetFVF(Handle);
 
 		CurrentVertexShaderHandle = 0;
@@ -1657,6 +1658,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteVertexShader(DWORD Handle)
 	if (CurrentVertexShaderHandle == Handle)
 	{
 		ProxyInterface->SetVertexShader(nullptr);
+		ProxyInterface->SetVertexDeclaration(nullptr);
 		CurrentVertexShaderHandle = 0;
 	}
 
