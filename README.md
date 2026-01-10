@@ -1,4 +1,14 @@
-d3d8to9
+## d3d8to9
+
+The `d3d8.dll` included in this repository is from the open-source
+**d3d8to9** project, which translates Direct3D 8 calls to Direct3D 9.
+
+This file is NOT part of Operation Flashpoint or any Bohemia Interactive game.
+It is provided for compatibility and educational purposes only.
+
+Project homepage:
+https://github.com/crosire/d3d8to9
+
 =======
 
 [![GitHub Actions Status](https://github.com/crosire/d3d8to9/actions/workflows/build.yml/badge.svg)](https://github.com/crosire/d3d8to9/actions/workflows/build.yml)
