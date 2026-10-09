@@ -177,6 +177,18 @@ HRESULT STDMETHODCALLTYPE Direct3D8::CreateDevice(UINT Adapter, D3DDEVTYPE Devic
 
 	*ppReturnedDeviceInterface = nullptr;
 
+	// Direct3D 8 titles that drive the device from more than one thread without
+	// asking for D3DCREATE_MULTITHREADED get undefined behaviour out of the
+	// Direct3D 9 runtime.
+	if ((BehaviorFlags & D3DCREATE_MULTITHREADED) == 0)
+	{
+		BehaviorFlags |= D3DCREATE_MULTITHREADED;
+
+#ifndef D3D8TO9NOLOG
+		LOG << "> Forcing D3DCREATE_MULTITHREADED (the title did not ask for it)." << std::endl;
+#endif
+	}
+
 	D3DPRESENT_PARAMETERS PresentParams;
 	ConvertPresentParameters(*pPresentationParameters, PresentParams);
 
