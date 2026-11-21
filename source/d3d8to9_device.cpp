@@ -1020,7 +1020,16 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetTextureStageState(DWORD Stage, D3D
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::ValidateDevice(DWORD *pNumPasses)
 {
-	return ProxyInterface->ValidateDevice(pNumPasses);
+	HRESULT hr = ProxyInterface->ValidateDevice(pNumPasses);
+
+	// Direct3D9 is more strict than Direct3D8 so just return OK for some failures
+	if (pNumPasses && (hr == E_FAIL || hr == D3DERR_UNSUPPORTEDTEXTUREFILTER))
+	{
+		*pNumPasses = 1;
+		return D3D_OK;
+	}
+
+	return hr;
 }
 HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetInfo(DWORD DevInfoID, void *pDevInfoStruct, DWORD DevInfoStructSize)
 {
